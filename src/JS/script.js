@@ -12,7 +12,7 @@ fetch('footer.html')
     })
     .catch(error => console.error('Error loading header:', error));
 
-    ///////////////VALIDATE ACCOUNT FORM//////////////////
+    ///////////////VALIDATE ACCOUNT FORM (SIGN UP PAGE)//////////////////
 document.getElementById("accForm").addEventListener("submit", validateForm);
 
 function validateForm(event) {
