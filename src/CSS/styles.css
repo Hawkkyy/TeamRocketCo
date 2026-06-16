@@ -65,7 +65,7 @@ header img {
             rgba(0,0,0,0.45),
             rgba(0,0,0,0.65)
         ),
-        url("../imgs/TeamRocketBanner.jpg");
+        url("Hero.png");
 
     background-size: cover;
     background-position: center;
@@ -152,6 +152,7 @@ td,
 th {
     border: 1px solid #444;
     padding: 12px;
+    text-align: center;
 }
 
 tr:nth-child(even) {
