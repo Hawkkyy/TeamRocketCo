@@ -2,22 +2,25 @@
 <html>
     <head>
         <link rel="stylesheet" href="styles.css">
-        <link rel="icon" type="" href=""> 
+        <link rel="icon" type="" href="imgs/RLogo.png"> 
         <title> Team Rocket Co. </title>
     </head>
 
     <body>
-        <header>
-            <a href> </a> 
-            <img src="" alt="logo" width="30" height="30">
-            <link rel="" type="image/x-icon" href=".jpg" />
-        </header>
+         <div id="header-placeholder"></div>
+        <!-- ======= Main Content ======= -->
             <p>
                 Team Rocket Co. has now upgraded its system to include a database that stores account and role details, card inventory, and online ordering. It provides a more accessible way to track and store data, rather than manually writing it down on paper or using Excel.
             </p>
-        <footer>
-
-        </footer>
+            <img src="" alt="Team Rocket">
+            
+        <script>
+            fetch('header.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('header-placeholder').innerHTML = data;
+                })
+                .catch(error => console.error('Error loading header:', error));
+        </script>
     </body>
-
 </html>
