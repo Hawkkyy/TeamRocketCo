@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
         <link rel="stylesheet" href="CSS/styles.css">
         <link rel="icon" type="" href="imgs/RLogo.png"> 
         <title> Team Rocket Co. </title>
@@ -15,15 +11,143 @@
          
         <!-- ======= Main Content ======= -->
          <main>
-            <p>
-                
-            </p>
+            <img src="imgs/TeamRocketLogo.png" alt="Team Rocket" style="width:40%;height: 40%;">
+            <div class="login">
+                <form name="orderForm" action="" onsubmit="return validateForm()" method="post">
+                    Card:
+                    <datalist id="cards">
+
+  <option value="Alakazam">
+  <option value="Blastoise">
+  <option value="Chansey">
+  <option value="Charizard">
+  <option value="Clefairy">
+  <option value="Gyarados">
+  <option value="Hitmonchan">
+  <option value="Machamp">
+  <option value="Magneton">
+  <option value="Mewtwo">
+  <option value="Nidoking">
+  <option value="Ninetales">
+  <option value="Poliwrath">
+  <option value="Raichu">
+  <option value="Venusaur">
+  <option value="Zapdos">
+
+  <option value="Beedrill">
+  <option value="Dragonair">
+  <option value="Dugtrio">
+  <option value="Electabuzz">
+  <option value="Electrode">
+  <option value="Pidgeotto">
+
+  <option value="Arcanine">
+  <option value="Charmeleon">
+  <option value="Dewgong">
+  <option value="Dratini">
+  <option value="Farfetch'd">
+  <option value="Growlithe">
+  <option value="Haunter">
+  <option value="Ivysaur">
+  <option value="Jynx">
+  <option value="Kadabra">
+  <option value="Kakuna">
+  <option value="Machoke">
+  <option value="Magikarp">
+  <option value="Magmar">
+  <option value="Nidorino">
+  <option value="Poliwhirl">
+  <option value="Porygon">
+  <option value="Raticate">
+  <option value="Seel">
+  <option value="Wartortle">
+
+  <option value="Abra">
+  <option value="Bulbasaur">
+  <option value="Caterpie">
+  <option value="Charmander">
+  <option value="Diglett">
+  <option value="Doduo">
+  <option value="Drowzee">
+  <option value="Gastly">
+  <option value="Koffing">
+  <option value="Machop">
+  <option value="Magnemite">
+  <option value="Metapod">
+  <option value="Nidoran♂">
+  <option value="Onix">
+  <option value="Pidgey">
+  <option value="Pikachu">
+  <option value="Poliwag">
+  <option value="Ponyta">
+  <option value="Rattata">
+  <option value="Sandshrew">
+  <option value="Squirtle">
+  <option value="Starmie">
+  <option value="Staryu">
+  <option value="Tangela">
+  <option value="Voltorb">
+  <option value="Vulpix">
+  <option value="Weedle">
+
+  <option value="Clefairy Doll">
+  <option value="Computer Search">
+  <option value="Devolution Spray">
+  <option value="Imposter Professor Oak">
+  <option value="Item Finder">
+  <option value="Lass">
+  <option value="Pokémon Breeder">
+  <option value="Pokémon Trader">
+  <option value="Scoop Up">
+  <option value="Super Energy Removal">
+
+  <option value="Defender">
+  <option value="Energy Retrieval">
+  <option value="Full Heal">
+  <option value="Maintenance">
+  <option value="PlusPower">
+  <option value="Pokémon Center">
+  <option value="Pokémon Flute">
+  <option value="Pokédex">
+  <option value="Professor Oak">
+  <option value="Revive">
+  <option value="Super Potion">
+
+  <option value="Bill">
+  <option value="Energy Removal">
+  <option value="Gust of Wind">
+  <option value="Potion">
+  <option value="Switch">
+
+  <option value="Double Colorless Energy">
+  <option value="Fighting Energy">
+  <option value="Fire Energy">
+  <option value="Grass Energy">
+  <option value="Lightning Energy">
+  <option value="Psychic Energy">
+  <option value="Water Energy">
+
+</datalist>
+                                                        <input type="text" id="card" name="card" list="cards"><br>   
+                    Order Type:                     
+                    <select id="type">
+                        <option>Buy</option>
+                        <option>Sell</option>
+                        <option>Trade</option>
+                    </select><br>
+                    Cards from Team Rocket Co.:         <input type="number" id="qtyAdmin" name="qtyAdmin"><br>
+                    Cards from Customer:                <input type="number" id="qtyCust" name="qtyCust"><br>
+                    Total Amount:                       <input type="text" id="tAmount" name="tAmount">
+                    <input type="submit" value="Submit">
+                </form> 
+            </div>
             <img src="" alt="Team Rocket">
          </main>
         <!-- ======= End ======= -->
 
         <div id="footer"></div>
 
+        <script src="JS/order.js" defer></script>
         <script src="JS/script.js" defer></script>
     </body>
 </html>
