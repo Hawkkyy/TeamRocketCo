@@ -7,20 +7,19 @@
     </head>
 
     <body>
-         <div id="header-placeholder"></div>
+         <div id="header"></div>
+         
         <!-- ======= Main Content ======= -->
+         <main>
             <p>
                 Team Rocket Co. has now upgraded its system to include a database that stores account and role details, card inventory, and online ordering. It provides a more accessible way to track and store data, rather than manually writing it down on paper or using Excel.
             </p>
             <img src="" alt="Team Rocket">
-            
-        <script>
-            fetch('header.html')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('header-placeholder').innerHTML = data;
-                })
-                .catch(error => console.error('Error loading header:', error));
-        </script>
+         </main>
+        <!-- ======= End ======= -->
+
+        <div id="footer"></div>
+
+        <script src="script.js" defer></script>
     </body>
 </html>
