@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="CS/styles.css">
+        <link rel="stylesheet" href="CSS/styles.css">
         <link rel="icon" type="" href="imgs/RLogo.png"> 
         <title> Team Rocket Co. </title>
     </head>
@@ -13,11 +13,9 @@
          <main>
             <img src="src/imgs/TeamRocket.png" alt="Team Rocket" style="width: 100%px;height: 50%px;">
             <div class="login">
-                <form action="">
-                    <label for="fname">First name:</label><br>
-                    <input type="text" id="fname" name="fname" value="John"><br>
-                    <label for="lname">Last name:</label><br>
-                    <input type="text" id="lname" name="lname" value="Doe"><br><br>
+                <form name="loginForm" action="" onsubmit="return validateForm()" method="post">
+                    Username: <input type="text" name="user"><br>
+                    Password: <input type="text" name="pass">
                     <input type="submit" value="Submit">
                 </form> 
             </div>
@@ -26,6 +24,7 @@
 
         <div id="footer"></div>
 
-        <script src="script.js" defer></script>
+        <script src="JS/login.js" defer></script>
+        <script src="JS/script.js" defer></script>
     </body>
 </html>

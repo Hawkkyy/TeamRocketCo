@@ -1,3 +1,8 @@
-# TeamRocketCo.
+# Pokémon TCG Catalog Database Inventory for a Card Trader Shop
 
-- Team Rocket Co. sells, buys, and trades Pokémon TCG cards; however, due to the high volume, tracking inventory has been difficult. To solve this problem, this project aims to organize Team Rocket Co.'s card inventory using real-time DBMS updates shown through a website.
+Teves, Vincent Roui L.
+Salazar, Bea Athena B. 
+Veterbo, Mariele C. 
+
+Brief Description:
+Pokémon TCG Catalog Database Inventory for a Card Trader Shop is a database that stores account and role details, card inventory, and online ordering. It also offers features such as generating card inventory reports and order lists in PDF format.
