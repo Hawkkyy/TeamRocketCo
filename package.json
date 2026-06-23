@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@tcgdex/sdk": "^2.9.0"
+  }
+}
