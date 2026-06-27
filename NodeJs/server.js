@@ -243,48 +243,41 @@ app.listen(3000, () => {
 });
 
 
-// Append this implementation block alongside route declarations inside NodeJs.txt (server.js environment)
-app.post("/process-order", async (req, res) => {
-  const { cardId, action, qty } = req.body;
+//stfff
+// ADD TO THE BOTTOM OF INVENTORY.JS
+// This attaches an Order Button click redirect handler directly to your project's active modal structure
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("details-modal");
+    if (modal) {
+        // Create an order button dynamically so you don't alter raw html structure
+        const orderBtn = document.createElement("button");
+        orderBtn.innerText = "Proceed to Buy / Sell / Trade";
+        orderBtn.style.cssText = "margin-top: 15px; width: 100%; padding: 10px; background: #d40000; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;";
+        
+        // Append it cleanly to your modal info block
+        const infoBlock = modal.querySelector(".modal-info") || modal;
+        infoBlock.appendChild(orderBtn);
 
-  if (!cardId || !action || !qty || qty <= 0) {
-    return res.status(400).send("Bad Request: Invalid transaction specifications provided.");
-  }
-
-  try {
-    // 1. Fetch current database record baseline
-    const [cards] = await db.query("SELECT * FROM tbl_cards WHERE card_id = ?", [cardId]);
-    if (cards.length === 0) {
-      return res.status(404).send("Target card record index match not found.");
+        orderBtn.addEventListener("click", () => {
+            // Find out which card ID is currently selected via your script logic context variables
+            if (typeof selectedCardId !== "undefined" && selectedCardId) {
+                window.location.href = `order.html?cardId=${selectedCardId}`;
+            } else {
+                // Fallback approach: find via current display matching rules
+                const currentName = document.getElementById("modal-name")?.innerText?.toLowerCase();
+                if (currentName) {
+                    fetch(`${BACKEND_URL}/inventory`)
+                        .then(res => res.json())
+                        .then(inventory => {
+                            const found = inventory.find(i => i.poke_name.toLowerCase() === currentName);
+                            if (found) {
+                                window.location.href = `order.html?cardId=${found.card_id}`;
+                            } else {
+                                alert("Please select a valid card first!");
+                            }
+                        });
+                }
+            }
+        });
     }
-
-    const targetCardInstance = cards[0];
-    let netStockModificationValue = 0;
-
-    // 2. Determine modification ruleset boundaries
-    if (action === "buy") {
-      if (targetCardInstance.stock_qty < qty) {
-        return res.status(400).send("Transaction processing denied: Insufficient stock levels.");
-      }
-      netStockModificationValue = targetCardInstance.stock_qty - qty;
-    } else if (action === "sell") {
-      // Inward trading increases warehouse allocation levels
-      netStockModificationValue = targetCardInstance.stock_qty + qty;
-    } else if (action === "trade") {
-      // Trades check requirements but can pass without modifying quantities instantly prior to inspection updates
-      netStockModificationValue = targetCardInstance.stock_qty; 
-    } else {
-      return res.status(400).send("Unsupported transaction type context schema submitted.");
-    }
-
-    // 3. Update database inventory values
-    const queryUpdateText = "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?";
-    await db.query(queryUpdateText, [netStockModificationValue, cardId]);
-
-    // Optional extension: Insert entry into an order book table if available
-    res.status(200).send(`Order processed successfully under action flag: [${action.toUpperCase()}]. Stock levels updated.`);
-  } catch (err) {
-    console.error("Order transaction error execution loop error sequence logged: ", err);
-    res.status(500).send(`Internal transaction loop pipeline failed tracking errors: ${err.message}`);
-  }
 });

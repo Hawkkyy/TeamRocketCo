@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="CSS/styles.css">
     <link rel="icon" href="imgs/RLogo.png"> 
-    <title>Team Rocket Co. - Process Transaction</title>
+    <title>Team Rocket Co. - Confirm Order</title>
 </head>
 <body>
     <header>
@@ -22,36 +22,35 @@
         </nav>
     </header>
 
-    <main style="max-width: 600px; margin: 40px auto; padding: 20px; background: #111122; border: 2px solid #d40000; border-radius: 8px;">
-        <h1 style="color: #ef5350; text-align: center;">Place an Order</h1>
+    <main style="max-width: 500px; margin: 40px auto; padding: 30px; background: #111122; border: 2px solid #d40000; border-radius: 8px;">
+        <h1 style="color: #ef5350; text-align: center; margin-bottom: 20px;">Place an Order</h1>
         
-        <div id="order-card-details" style="text-align: center; margin-bottom: 20px;">
-            <h3 id="card-name-display" style="font-size: 24px; color: #fff;">Loading Card Info...</h3>
-            <p id="card-meta-display" style="color: #aaa; margin: 5px 0;"></p>
-            <p style="font-size: 20px; color: #4caf50;">Price: <span id="card-price-display">₱0.00</span></p>
-            <p style="color: #e0e0e0;">Current Stock Availability: <span id="card-stock-display">0</span></p>
+        <div id="order-card-details" style="text-align: center; margin-bottom: 25px;">
+            <h3 id="order-card-name" style="font-size: 24px; color: #fff; text-transform: uppercase;">Loading Card...</h3>
+            <p style="font-size: 20px; color: #4caf50; margin: 10px 0;">Price: <span id="order-card-price">₱0.00</span></p>
+            <p style="color: #e0e0e0;">Available Stock: <span id="order-card-stock">0</span></p>
         </div>
 
         <form id="orderForm" style="display: flex; flex-direction: column; gap: 15px;">
-            <label for="transactionType">Transaction Action:</label>
-            <select id="transactionType" style="padding: 10px; border-radius: 4px; background: #22003d; color: white;" required>
+            <label for="transactionType" style="color: #aaa; font-weight: bold;">Select Action:</label>
+            <select id="transactionType" style="padding: 10px; border-radius: 4px; background: #22003d; color: white; border: 1px solid #d40000;" required>
                 <option value="buy">Buy (Purchase Card)</option>
-                <option value="sell">Sell (Trade-In to Shop)</option>
-                <option value="trade">Trade (Exchange Request)</option>
+                <option value="sell">Sell (Sell to Shop)</option>
+                <option value="trade">Trade (Exchange Proposal)</option>
             </select>
 
-            <label for="orderQty">Quantity:</label>
-            <input type="number" id="orderQty" min="1" value="1" style="padding: 10px; border-radius: 4px;" required>
+            <label for="orderQty" style="color: #aaa; font-weight: bold;">Quantity:</label>
+            <input type="number" id="orderQty" min="1" value="1" style="padding: 10px; border-radius: 4px; border: 1px solid #ccc;" required>
 
-            <div id="confirmationBox" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; display: none; border-left: 4px solid #ef5350;">
-                <h4 style="margin: 0 0 10px 0; color: #ff4040;">Review & Confirm Summary</h4>
-                <p id="confirmationText" style="margin: 0; line-height: 1.5; color: #fff;"></p>
-                <button type="button" id="finalConfirmBtn" style="margin-top: 15px; width: 100%; padding: 10px; background: #4caf50; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer;">
-                    Confirm Transaction
+            <div id="confirmWindow" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; display: none; border-left: 4px solid #ef5350; margin-top: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #ff4040; text-transform: uppercase;">Review Confirmation</h4>
+                <p id="confirmText" style="margin: 0; line-height: 1.5; color: #fff; font-size: 14px;"></p>
+                <button type="button" id="finalConfirmBtn" style="margin-top: 15px; width: 100%; padding: 12px; background: #4caf50; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer;">
+                    Confirm & Submit
                 </button>
             </div>
 
-            <button type="submit" id="initiateOrderBtn" style="padding: 12px; background: #ef5350; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer;">
+            <button type="submit" id="proceedBtn" style="padding: 12px; background: #ef5350; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 16px;">
                 Proceed to Confirmation
             </button>
         </form>

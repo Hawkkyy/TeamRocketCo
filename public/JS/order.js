@@ -1,99 +1,90 @@
-const BACKEND_URL = "https://teamrocketco.onrender.com"; // Keep consistent with inventory.js
+const BACKEND_URL = "https://teamrocketco.onrender.com";
 
-// Extract card details and pre-selected action from URL string query bounds
+// Find out which card ID was passed to this page from the inventory click
 const urlParams = new URLSearchParams(window.location.search);
 const cardId = urlParams.get('cardId');
-const defaultAction = urlParams.get('action') || 'buy';
 
-let activeCardData = null;
+let currentCard = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
     if (!cardId) {
-        alert("No valid card selection detected. Returning to inventory view.");
+        alert("No card selected! Redirecting back to inventory.");
         window.location.href = "inventory.html";
         return;
     }
 
-    // Pre-populate drop-down selection from context intent rules
-    document.getElementById("transactionType").value = defaultAction;
-
-    // Fetch master inventory payload list to resolve details locally
+    // Fetch the active database cards to find our details
     try {
         const response = await fetch(`${BACKEND_URL}/inventory`);
         const inventory = await response.json();
-        activeCardData = inventory.find(item => item.card_id == cardId);
+        currentCard = inventory.find(item => item.card_id == cardId);
 
-        if (!activeCardData) {
-            alert("Card ledger item could not be retrieved from current stocks.");
+        if (!currentCard) {
+            alert("Card details could not be found.");
             return;
         }
 
-        // Render target values to view elements
-        document.getElementById("card-name-display").innerText = activeCardData.poke_name.toUpperCase();
-        document.getElementById("card-meta-display").innerText = `Condition: ${activeCardData.condition_id} | Variant: ${activeCardData.variant_id}`;
-        document.getElementById("card-price-display").innerText = `₱${activeCardData.base_price}`;
-        document.getElementById("card-stock-display").innerText = activeCardData.stock_qty;
+        // Show card values dynamically on screen
+        document.getElementById("order-card-name").innerText = currentCard.poke_name;
+        document.getElementById("order-card-price").innerText = `₱${currentCard.base_price}`;
+        document.getElementById("order-card-stock").innerText = currentCard.stock_qty;
     } catch (err) {
-        console.error("Failed to set up card order configuration metadata context: ", err);
+        console.error("Error loading ordering metadata:", err);
     }
 });
 
-// Step 2A: Handle First "Proceed to Confirmation" Step
+// "Confirm" display handler for Buy, Sell, and Trade
 document.getElementById("orderForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!activeCardData) return;
+    if (!currentCard) return;
 
     const action = document.getElementById("transactionType").value;
     const qty = parseInt(document.getElementById("orderQty").value);
 
-    if (action === "buy" && qty > activeCardData.stock_qty) {
-        alert("Transaction Aborted: Requested volume exceeds available inventory holdings.");
+    // Stop them if they try to buy more cards than we have in stock
+    if (action === "buy" && qty > currentCard.stock_qty) {
+        alert(`Error: Not enough stock! We only have ${currentCard.stock_qty} available.`);
         return;
     }
 
-    const priceImpact = activeCardData.base_price * qty;
-    let actionLabel = "";
-    let consequenceDisclaimer = "";
+    const totalCost = currentCard.base_price * qty;
+    let message = "";
 
+    // Dynamic text configurations matching Mariele's assignment goals
     if (action === "buy") {
-        actionLabel = "BUYING";
-        consequenceDisclaimer = `You will purchase ${qty} copy/copies. Total deduction estimate: ₱${priceImpact.toFixed(2)}. Inventory levels will decrement.`;
+        message = `You are about to <strong>BUY</strong> ${qty}x ${currentCard.poke_name.toUpperCase()}. <br>Total Cost: ₱${totalCost.toFixed(2)}`;
     } else if (action === "sell") {
-        actionLabel = "SELLING";
-        consequenceDisclaimer = `You are offering to sell ${qty} copy/copies to our stores. Estimated payout credit: ₱${(priceImpact * 0.7).toFixed(2)} (70% store appraisal standard value). Inventory counts will increment.`;
+        message = `You are about to <strong>SELL</strong> ${qty}x ${currentCard.poke_name.toUpperCase()} back to our shop. <br>Estimated Payout: ₱${(totalCost * 0.7).toFixed(2)}`;
     } else if (action === "trade") {
-        actionLabel = "TRADING";
-        consequenceDisclaimer = `You are filing a trade swap proposal notice for ${qty} unit(s). Handlers will appraise verification profiles before executing final card modifications.`;
+        message = `You are submitting a request to <strong>TRADE</strong> ${qty}x ${currentCard.poke_name.toUpperCase()}. Our shop admins will review the swap details.`;
     }
 
-    // Present confirmation pane window component
-    document.getElementById("confirmationText").innerHTML = `<strong>Action Intent:</strong> ${actionLabel}<br><strong>Item Target:</strong> ${activeCardData.poke_name}<br><strong>Disclaimer Notes:</strong> ${consequenceDisclaimer}`;
-    document.getElementById("confirmationBox").style.display = "block";
-    document.getElementById("initiateOrderBtn").style.display = "none";
+    // Show the confirmation box step
+    document.getElementById("confirmText").innerHTML = message;
+    document.getElementById("confirmWindow").style.display = "block";
+    document.getElementById("proceedBtn").style.display = "none";
 });
 
-// Step 2B: Process final action endpoint communication hook upon confirm event click tracking
+// Final Action execution handler connecting to backend
 document.getElementById("finalConfirmBtn").addEventListener("click", async () => {
     const action = document.getElementById("transactionType").value;
     const qty = parseInt(document.getElementById("orderQty").value);
 
     try {
-        const payload = { cardId: cardId, action: action, qty: qty };
         const response = await fetch(`${BACKEND_URL}/process-order`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ cardId, action, qty })
         });
 
-        const outcomeText = await response.text();
         if (response.ok) {
-            alert(`Success! ${outcomeText}`);
-            window.location.href = "inventory.html";
+            alert("Success! Transaction confirmed and database updated.");
+            window.location.href = "inventory.html"; // Go back when finished!
         } else {
-            alert(`Transaction Failure Notice: ${outcomeText}`);
+            const errorMsg = await response.text();
+            alert(`Order Failed: ${errorMsg}`);
         }
     } catch (err) {
-        console.error("Order completion interface network fault: ", err);
-        alert("Network execution failure occurred processing target transaction endpoints.");
+        alert("Network error processing your order.");
     }
 });
