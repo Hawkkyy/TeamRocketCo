@@ -1,8 +1,7 @@
 const path = require("path");
 
-// 1. ENVIRONMENT MANIPULATION FIRST
-// This loads the variables immediately before any database clusters init
-require("dotenv").config({ path: path.join(__dirname, "server.env") });
+// 1. Standard Node environment loader (Bypasses dotenvx completely)
+require("dotenv").config({ path: path.resolve(__dirname, "server.env") });
 
 const express = require("express");
 const mysql = require("mysql2");
@@ -12,7 +11,7 @@ const puppeteer = require("puppeteer");
 
 const app = express(); 
 
-// 2. MIDDLEWARE HOOKS & STATIC ROUTING
+// 2. MIDDLEWARE HOOKS
 app.use(cors({
   origin: ['https://hawkkyy.github.io', 'http://localhost:3000'],
   credentials: true
@@ -21,19 +20,21 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Force static files to track from the execution folder to clear local firewall errors
-app.use(express.static(path.join(process.cwd(), "public")));
+// Use path.resolve to calculate an absolute path to your public folder
+app.use(express.static(path.resolve(__dirname, "../public")));
 
-// 3. DATABASE SETUP
+// 3. DATABASE SETUP (Using explicit variables)
 const pool = mysql.createPool({
-  uri: process.env.DATABASE_URL, 
+  uri: "mysql://root:fuhQNRpZgjCyLcstrfarECeQyzDSpNvE@reseau.proxy.rlwy.net:23677/railway", 
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: false // Bypasses cloud SSL validation restrictions during local testing
+  }
 });
 
 const db = pool.promise();
-
 // 4. CORE AUTHENTICATION ENDPOINTS
 app.get("/", (req, res) => {
     res.send("Server is working");
