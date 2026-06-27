@@ -66,7 +66,6 @@ header img {
             rgba(0,0,0,0.65)
         ),
         url("Hero.png");
-
     background-size: cover;
     background-position: center;
     position: relative;
@@ -116,6 +115,12 @@ main {
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(255,0,0,0.15);
+    
+    /* Changed to standard block flow so text reads naturally */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; 
+    text-align: left; 
 }
 
 main p {
@@ -124,9 +129,10 @@ main p {
 }
 
 main ul {
-    margin: 15px 0 15px 30px;
+    margin: 15px 0;
+    padding-left: 25px;
+    list-style-position: outside;
 }
-
 main li {
     margin-bottom: 8px;
 }
@@ -138,6 +144,19 @@ main a {
 
 main a:hover {
     color: #ff4040;
+}
+
+main h1, main h2 {
+    margin: 20px 0;
+    width: 100%;
+    text-align: center;
+}
+
+main > img {
+    display: block;
+    max-width: 250px;
+    height: auto !important;
+    margin: 0 auto;
 }
 
 
@@ -163,8 +182,6 @@ tr:hover {
     background: rgba(212,0,0,0.15);
 }
 
-
-
 table img {
     width: 120px !important;
     height: auto !important;
@@ -179,30 +196,58 @@ table img:hover {
 
 .login {
     margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 .login form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    max-width: 350px;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
+    font-weight: 600;
+    color: #f5f5f5;
 }
 
 .login input[type="text"],
-.login input[type="password"] {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
+.login input[type="password"],
+.login input[type="number"],
+.login select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #111122;
+    font-family: inherit;
+    font-size: 0.95rem;
+    box-sizing: border-box; 
+    outline: none;
+    transition: box-shadow 0.3s ease;
+}
+
+.login input:focus,
+.login select:focus {
+    box-shadow: 0 0 8px rgba(214, 0, 0, 0.6);
 }
 
 .login input[type="submit"] {
     background: #d40000;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 12px;
+    margin-top: 10px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
     font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    transition: background 0.3s ease;
 }
 
 .login input[type="signUp"] {
