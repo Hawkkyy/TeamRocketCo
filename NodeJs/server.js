@@ -43,14 +43,15 @@ app.get("/users", async (req, res) => {
 app.post("/register", async (req, res) => {
   try {
     // Grab data from the HTML input 'name' attributes
-    const { username, email, password } = req.body; 
+    const { user, fname, lname, cont, area, pass } = req.body; 
 
     // SQL query pointing to your table (tbl_users)
-    const sql = "INSERT INTO tbl_users (username, email, password) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO tbl_users (username, firstname, lastname, contact_no, area_code, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
+    const defaultRole = "user";
+
     // Execute using your promise-based 'db' variable
-    await db.query(sql, [username, email, password]);
-    
+    await db.query(sql, [ user, fname, lname, cont, area, pass, defaultRole]);
     // Send a success response back to the browser
     res.send("Account successfully created!");
   } catch (err) {
