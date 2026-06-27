@@ -53,6 +53,38 @@ app.post("/register", async (req, res) => {
   } 
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    const { user, pass } = req.body;
+
+    const [rows] = await db.query("SELECT * FROM tbl_users WHERE username = ?", [user]);
+
+    if (rows.length === 0) {
+      return res.status(401).send("Invalid username or password");
+    }
+
+    const foundUser = rows[0];
+
+    const match = await bcrypt.compare(pass, foundUser.password_hash);
+
+    if (!match) {
+      return res.status(401).send("Invalid username or password");
+    }
+
+    if (foundUser.role === "admin") {
+      res.json({ message: "Welcome Admin!", redirectTo: "/adminsection/a-dashboard.html" });
+    } else {
+      // Send them to the regular user home page
+      res.json({ message: "Welcome back!", redirectTo: "/inventory.html" });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Login error occurred");
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
