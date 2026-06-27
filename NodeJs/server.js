@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 // 5. Database query route (now 'db' and 'app' are fully defined and ready to go)
 app.get("/users", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM users");
+    const [rows] = await db.query("SELECT * FROM tbl_users");
     res.json(rows);
   } catch (err) {
     console.error(err);
