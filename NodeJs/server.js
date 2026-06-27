@@ -38,6 +38,27 @@ app.get("/users", async (req, res) => {
   }
 });
 
+//signUp ( Add Users )
+
+app.post("/register", async (req, res) => {
+  try {
+    // Grab data from the HTML input 'name' attributes
+    const { username, email, password } = req.body; 
+
+    // SQL query pointing to your table (tbl_users)
+    const sql = "INSERT INTO tbl_users (username, email, password) VALUES (?, ?, ?)";
+    
+    // Execute using your promise-based 'db' variable
+    await db.query(sql, [username, email, password]);
+    
+    // Send a success response back to the browser
+    res.send("Account successfully created!");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create user", details: err.message });
+  }
+});
+
 // 6. Start listening
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
