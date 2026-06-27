@@ -1,5 +1,14 @@
 //backend
 
+
+const db = require("./db");
+
+// test query
+app.get("/users", async (req, res) => {
+  const [rows] = await db.query("SELECT * FROM users");
+  res.json(rows);
+});
+
 const express = require("express");
 const app = express();
 

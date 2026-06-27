@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@tcgdex/sdk": "^2.9.0"
+    "@tcgdex/sdk": "^2.9.0",
+    "mysql2": "^3.22.5"
   }
 }
