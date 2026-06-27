@@ -1,5 +1,5 @@
 const path = require("path");
-require("dotenv").config({ path: "./server.env" });
+require("dotenv").config({ path: path.join(__dirname, "server.env") });
 
 const express = require("express");
 const mysql = require("mysql2");
@@ -242,9 +242,12 @@ app.get("/download-pdf", async (req, res) => {
   } catch (err) {
     console.error("Puppeteer PDF generation failed:", err);
     if (browser) await browser.close();
-    res.status(500).send("Failed to compile document ledger.");
+    
+    res.status(500).send(`Failed to compile document ledger. Error: ${err.message}`);
   }
 });
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
