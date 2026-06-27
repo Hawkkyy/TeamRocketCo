@@ -3,12 +3,9 @@ require("dotenv").config({ path: "./server.env" });
 
 const express = require("express");
 const mysql = require("mysql2");
-const cors = require("cors");
-
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // 2. Create the connection pool
 const pool = mysql.createPool({
@@ -33,7 +30,7 @@ app.get("/", (req, res) => {
 // 5. Database query route (now 'db' and 'app' are fully defined and ready to go)
 app.get("/users", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM tbl_users");
+    const [rows] = await db.query("SELECT * FROM users");
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -58,16 +55,10 @@ app.post("/register", async (req, res) => {
     // Send a success response back to the browser
     res.send("Account successfully created!");
   } catch (err) {
-  console.error(err); // This prints it to your Render dashboard logs
-  
-  // FIX: This will send the full error details back to your browser screen
-  res.status(500).json({ 
-    error: "Failed to create user", 
-    details: err.message || JSON.stringify(err) 
-  });
-}
-};
-
+    console.error(err);
+    res.status(500).json({ error: "Failed to create user", details: err.message });
+  }
+});
 
 // 6. Start listening
 const PORT = process.env.PORT || 3000;
