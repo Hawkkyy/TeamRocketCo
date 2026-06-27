@@ -72,10 +72,10 @@ app.post("/login", async (req, res) => {
     }
 
     if (foundUser.role === "admin") {
-      res.json({ message: "Welcome Admin!", redirectTo: "/adminsection/a-dashboard.html" });
+      res.redirect("/asection/a-dashboard.html");
     } else {
       // Send them to the regular user home page
-      res.json({ message: "Welcome back!", redirectTo: "/inventory.html" });
+      res.redirect("/inventory.html");
     }
 
   } catch (err) {
