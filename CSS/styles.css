@@ -249,7 +249,7 @@ table img:hover {
     transition: background 0.3s ease;
 }
 
-.login input[type="signUp"] {
+.login .sw {
     background: #d40000;
     color: white;
     border: none;
@@ -260,10 +260,6 @@ table img:hover {
 }
 
 .login input[type="submit"]:hover {
-    background: #ff4040;
-}
-
-.login input[type="signUp"]:hover {
     background: #ff4040;
 }
 
