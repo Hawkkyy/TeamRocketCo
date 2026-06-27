@@ -247,156 +247,82 @@ app.listen(3000, () => {
 // =========================================================================
 // MARIELE'S TRANSACTION ENGINE ENDPOINT - PASTE AT THE BOTTOM OF NODEJS.TXT
 // =========================================================================
-app.post("/process-order", async (req, res) => {
-  const { cardId, action, qty } = req.body;
-  
-  // Uses user_id = 1 as a default placeholder value if a session isn't passed
-  const userId = req.body.userId || 1; 
+// POST ENDPOINT FOR MANAGING INVENTORY STOCK TRANSACTIONS
+app.post("/transaction", async (req, res) => {
+    // 1. Destructure fields matches matching the frontend payload properties
+    const { userId, cardId, orderType, qty, totalPrice } = req.body;
 
-  if (!cardId || !action || !qty || qty <= 0) {
-    return res.status(400).send("Invalid input parameters provided.");
-  }
-
-  // Format incoming action string to match ENUM('Buy','Sell','Trade') casing exactly
-  const orderType = action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
-
-  // Establish a connection from your existing pool to handle safe SQL transactions
-  const connection = await pool.getConnection();
-
-  try {
-    // Start tracking queries safely
-    await connection.beginTransaction();
-
-    // 1. Fetch current information for the card by joining tbl_cards with tbl_pokemons
-    const [cards] = await connection.query(
-      "SELECT c.*, p.base_price FROM tbl_cards c JOIN tbl_pokemons p ON c.poke_id = p.poke_id WHERE c.card_id = ?", 
-      [cardId]
-    );
-    
-    if (cards.length === 0) {
-      await connection.rollback();
-      return res.status(404).send("Card record match not found in database registry.");
+    if (!userId || !cardId || !orderType || !qty) {
+        return res.status(400).send("Missing mandatory transaction details.");
     }
 
-    const cardRecord = cards[0];
-    const currentStock = cardRecord.stock_qty;
-    
-    // Choose accurate pricing metric variables from data dictionary attributes
-    const pricePerUnit = parseFloat(cardRecord.final_price) || parseFloat(cardRecord.base_price || 0);
-    const totalPrice = pricePerUnit * qty;
-    
-    let updatedStock = currentStock;
+    // Get an atomic connection channel from the pool
+    const connection = await db.getConnection();
 
-    // 2. Validate operational boundaries against inventory stock levels
-    if (action.toLowerCase() === "buy") {
-      if (currentStock < qty) {
-        await connection.rollback();
-        return res.status(400).send(`Insufficient items. Only ${currentStock} units available.`);
-      }
-      updatedStock = currentStock - qty;
-    } else if (action.toLowerCase() === "sell") {
-      updatedStock = currentStock + qty;
-    } else if (action.toLowerCase() === "trade") {
-      // Trades generate tracking logs without modifying counts instantly
-      updatedStock = currentStock;
-    } else {
-      await connection.rollback();
-      return res.status(400).send("Unsupported transaction configuration action.");
-    }
+    try {
+        // Begin Transaction scope explicitly
+        await connection.beginTransaction();
 
-    // 3. Update stock_qty inside tbl_cards table
-    await connection.query(
-      "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
-      [updatedStock, cardId]
-    );
+        // 2. Fetch current stock figures from tbl_cards 
+        const [cardRows] = await connection.query(
+            "SELECT stock_qty FROM tbl_cards WHERE card_id = ?", 
+            [cardId]
+        );
 
-    // 4. Save main transaction details inside tbl_transactions table
-    const [txResult] = await connection.query(
-      "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
-      [userId, orderType, totalPrice]
-    );
-    const newTransactionId = txResult.insertId;
-
-    // 5. Save items mapping metrics inside tbl_transaction_items table
-    // qty_cust matches the order volume requested by the user, while qty_admin defaults to 0
-    await connection.query(
-      "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
-      [newTransactionId, cardId, qty, totalPrice]
-    );
-
-    // Commit and save everything to the database safely
-    await connection.commit();
-    res.status(200).send("Order confirmed and written directly to your database logs!");
-
-  } catch (err) {
-    // If any step fails, roll back all queries to prevent corrupt database records
-    await connection.rollback();
-    console.error("Database transaction rolled back due to error execution context:", err);
-    res.status(500).send(`Database operation fault encountered: ${err.message}`);
-  } finally {
-    connection.release();
-  }
-});
-
-
-// ... Your existing backend route setup (app.post('/order', ...))
-try {
-    await connection.beginTransaction();
-
-    // 1. Check existing inventory stock allocation
-    const [stockRows] = await connection.query(
-      "SELECT stock_qty FROM tbl_cards WHERE card_id = ?", 
-      [cardId]
-    );
-
-    if (stockRows.length === 0) {
-        throw new Error("Card ID target structural log entry not found.");
-    }
-
-    const dbStock = stockRows[0].stock_qty;
-    let updatedStock = dbStock;
-
-    // 2. Calculate new stock based on the transaction type mapping context
-    if (orderType === "BUY") {
-        updatedStock = dbStock - qty; // Customer buys -> Shop loses stock
-        if (updatedStock < 0) {
-            throw new Error("Insufficient store stock available for purchase.");
+        if (cardRows.length === 0) {
+            throw new Error("Target card record was not found in database.");
         }
-    } else if (orderType === "SELL") {
-        updatedStock = dbStock + qty; // Customer sells -> Shop gains stock
-    } else if (orderType === "TRADE") {
-        // Define your custom rule for trade. 
-        // If it's a 1-to-1 switch, stock might stay unchanged, or adjust accordingly:
-        updatedStock = dbStock; 
-    } else {
-        throw new Error("Invalid transaction type processed.");
+
+        const dbStock = cardRows[0].stock_qty;
+        let updatedStock = dbStock;
+
+        // Apply rules matching the specified transaction actions
+        if (orderType === "BUY") {
+            if (dbStock < qty) {
+                return res.status(400).send(`Insufficient card shop inventory stock. Available: ${dbStock}`);
+            }
+            updatedStock = dbStock - qty; // Customer buys -> Shop loses stock
+        } else if (orderType === "SELL") {
+            updatedStock = dbStock + qty; // Customer sells -> Shop gains stock
+        } else if (orderType === "TRADE") {
+            // Keep stock balance unchanged for direct 1-to-1 trades or define custom business rules
+            updatedStock = dbStock;
+        } else {
+            throw new Error("Invalid transaction type processed.");
+        }
+
+        // 3. Update dynamic stock status metrics down inside tbl_cards
+        await connection.query(
+            "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
+            [updatedStock, cardId]
+        );
+
+        // 4. Record row inside main log ledger table (tbl_transactions)
+        const [txResult] = await connection.query(
+            "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
+            [userId, orderType, totalPrice]
+        );
+        
+        const newTransactionId = txResult.insertId;
+
+        // 5. Connect maps inside breakdown registry table (tbl_transaction_items)
+        // Adjust column mappings to perfectly match your target data layout parameters
+        await connection.query(
+            "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
+            [newTransactionId, cardId, qty, totalPrice]
+        );
+
+        // Everything succeeded safely -> commit changes permanently
+        await connection.commit();
+        res.status(200).send(`Transaction (${orderType}) registered successfully!`);
+
+    } catch (err) {
+        // Rollback details safely if an error breaks our chain pipeline
+        await connection.rollback();
+        console.error("Transaction failed, execution rolled back:", err);
+        res.status(500).send(`System error processing order logs: ${err.message}`);
+    } finally {
+        // Yield connection slot tracking back up to active pool handlers
+        connection.release();
     }
-
-    // 3. Update stock_qty inside tbl_cards table
-    await connection.query(
-      "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
-      [updatedStock, cardId]
-    );
-
-    // 4. Save main transaction details inside tbl_transactions table
-    const [txResult] = await connection.query(
-      "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
-      [userId, orderType, totalPrice]
-    );
-    const newTransactionId = txResult.insertId;
-
-    // 5. Save items mapping metrics inside tbl_transaction_items table
-    await connection.query(
-      "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
-      [newTransactionId, cardId, qty, totalPrice]
-    );
-
-    // Commit cleanly to avoid rollbacks
-    await connection.commit();
-    res.status(200).send(`Transaction (${orderType}) saved successfully!`);
-
-} catch (err) {
-    await connection.rollback();
-    console.error("Database transaction rolled back due to error execution context:", err);
-    res.status(400).send(err.message);
-}
+});

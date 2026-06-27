@@ -1,92 +1,64 @@
-const BACKEND_URL = "https://teamrocketco.onrender.com";
+const BACKEND_URL = "https://teamrocketco.onrender.com"; // Adjust to your running backend domain
 
-// Pull chosen cardId context from current address link bounds
+// 1. Get query string parameters from URL path
 const urlParams = new URLSearchParams(window.location.search);
 const cardId = urlParams.get('cardId');
-let currentCard = null;
+const actionParam = urlParams.get('action') || 'BUY'; // default to BUY
 
-document.addEventListener("DOMContentLoaded", async () => {
+window.onload = async () => {
     if (!cardId) {
-        alert("No card selected! Redirecting back to inventory.");
+        alert("No card chosen to complete an order.");
         window.location.href = "inventory.html";
         return;
     }
 
     try {
-        const response = await fetch(`${BACKEND_URL}/inventory`);
-        const inventory = await response.json();
-        currentCard = inventory.find(item => item.card_id == cardId);
+        // Fetch current catalog items to present descriptions to the user
+        const res = await fetch(`${BACKEND_URL}/inventory`);
+        const inventory = await res.json();
+        const cardData = inventory.find(item => item.card_id == cardId);
 
-        if (!currentCard) {
-            alert("Card details could not be found.");
-            return;
-        }
+        if (cardData) {
+            // Set dynamic text display inside your order HTML fields
+            document.getElementById("order-card-name").innerText = cardData.poke_name.toUpperCase();
+            document.getElementById("order-action-type").innerText = actionParam.toUpperCase();
+            document.getElementById("order-price").innerText = `₱${cardData.base_price}`;
+            
+            // Listen to order submission form action
+            document.getElementById("orderForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                const quantity = parseInt(document.getElementById("order-qty").value);
+                const totalPrice = cardData.base_price * quantity;
+                
+                // Assuming session data provides user_id, or defaulting to a test account user_id = 1
+                const userId = 1; 
 
-        // Rely on final_price, fall back to base_price if necessary
-        const activeDisplayPrice = currentCard.final_price || currentCard.base_price || 0;
+                const orderPayload = {
+                    userId: userId,
+                    cardId: parseInt(cardId),
+                    orderType: actionParam.toUpperCase(), // "BUY", "SELL", or "TRADE"
+                    qty: quantity,
+                    totalPrice: totalPrice
+                };
 
-        document.getElementById("order-card-name").innerText = currentCard.poke_name;
-        document.getElementById("order-card-price").innerText = `₱${parseFloat(activeDisplayPrice).toFixed(2)}`;
-        document.getElementById("order-card-stock").innerText = currentCard.stock_qty;
-    } catch (err) {
-        console.error("Error setting up order page fields:", err);
-    }
-});
+                // Post transaction structure directly to backend route endpoint
+                const response = await fetch(`${BACKEND_URL}/transaction`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(orderPayload)
+                });
 
-// Show the 'Confirm' step screen layout on form submission
-document.getElementById("orderForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!currentCard) return;
-
-    const action = document.getElementById("transactionType").value;
-    const qty = parseInt(document.getElementById("orderQty").value);
-
-    if (action === "buy" && qty > currentCard.stock_qty) {
-        alert(`Error: Not enough stock! We only have ${currentCard.stock_qty} available.`);
-        return;
-    }
-
-    const pricePerUnit = currentCard.final_price || currentCard.base_price || 0;
-    const totalCost = pricePerUnit * qty;
-    let message = "";
-
-    if (action === "buy") {
-        message = `You are about to <strong>BUY</strong> ${qty}x ${currentCard.poke_name.toUpperCase()}. <br>Total Order Cost: ₱${totalCost.toFixed(2)}`;
-    } else if (action === "sell") {
-        message = `You are about to <strong>SELL</strong> ${qty}x ${currentCard.poke_name.toUpperCase()} back to our shop. <br>Total Payout Estimate: ₱${totalCost.toFixed(2)}`;
-    } else if (action === "trade") {
-        message = `You are submitting an offer to <strong>TRADE</strong> ${qty}x ${currentCard.poke_name.toUpperCase()}. This transaction will be logged for admin verification.`;
-    }
-
-    document.getElementById("confirmText").innerHTML = message;
-    document.getElementById("confirmWindow").style.display = "block";
-    document.getElementById("proceedBtn").style.display = "none";
-});
-
-// Send order details to the backend to create the database records
-document.getElementById("finalConfirmBtn").addEventListener("click", async () => {
-    const action = document.getElementById("transactionType").value;
-    const qty = parseInt(document.getElementById("orderQty").value);
-
-    try {
-        const response = await fetch(`${BACKEND_URL}/process-order`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                cardId: cardId, 
-                action: action, 
-                qty: qty 
-            })
-        });
-
-        if (response.ok) {
-            alert("Success! Transaction completed and added to database logs.");
-            window.location.href = "inventory.html";
-        } else {
-            const errorMsg = await response.text();
-            alert(`Order Failed: ${errorMsg}`);
+                if (response.ok) {
+                    alert(`Success! Transaction (${actionParam.toUpperCase()}) completed and logged.`);
+                    window.location.href = "inventory.html";
+                } else {
+                    const errorText = await response.text();
+                    alert("Transaction failed: " + errorText);
+                }
+            });
         }
     } catch (err) {
-        alert("A network connection fault interrupted your request.");
+        console.error("Error managing order setup workflow:", err);
     }
-});
+};
