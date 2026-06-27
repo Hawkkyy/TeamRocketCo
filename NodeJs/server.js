@@ -93,10 +93,6 @@ app.post("/login", async (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
 
 // Get all cards for the inventory page
 app.get("/inventory", async (req, res) => {
@@ -118,4 +114,10 @@ app.get("/inventory", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to retrieve inventory data" });
   }
+});
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
