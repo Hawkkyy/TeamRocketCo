@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// This connects using the ALL-IN-ONE URL string
 const pool = mysql.createPool({
   uri: process.env.DATABASE_URL, 
   waitForConnections: true,
