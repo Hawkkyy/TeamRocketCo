@@ -1,4 +1,7 @@
 const path = require("path");
+
+// 1. ENVIRONMENT MANIPULATION FIRST
+// This loads the variables immediately before any database clusters init
 require("dotenv").config({ path: path.join(__dirname, "server.env") });
 
 const express = require("express");
@@ -9,18 +12,19 @@ const puppeteer = require("puppeteer");
 
 const app = express(); 
 
+// 2. MIDDLEWARE HOOKS & STATIC ROUTING
 app.use(cors({
   origin: ['https://hawkkyy.github.io', 'http://localhost:3000'],
   credentials: true
 }));
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Force static files to track from the execution folder to clear local firewall errors
 app.use(express.static(path.join(process.cwd(), "public")));
 
-
-
+// 3. DATABASE SETUP
 const pool = mysql.createPool({
   uri: process.env.DATABASE_URL, 
   waitForConnections: true,
@@ -30,6 +34,7 @@ const pool = mysql.createPool({
 
 const db = pool.promise();
 
+// 4. CORE AUTHENTICATION ENDPOINTS
 app.get("/", (req, res) => {
     res.send("Server is working");
 });
@@ -47,7 +52,6 @@ app.get("/users", async (req, res) => {
 app.post("/register", async (req, res) => {
   try {
     const { user, fname, lname, cont, area, pass } = req.body; 
-
     const hashedPassword = await bcrypt.hash(pass, 10);
 
     const sql = "INSERT INTO tbl_users (username, firstname, lastname, contact_no, area_code, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -67,12 +71,12 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { user, pass } = req.body;
-    console.log(`Checking login for user: ${user}`); // <-- Log 1
+    console.log(`Checking login for user: ${user}`);
 
     const [rows] = await db.query("SELECT * FROM tbl_users WHERE username = ?", [user]);
 
     if (rows.length === 0) {
-      console.log("User not found in database"); // <-- Log 2
+      console.log("User not found in database");
       return res.status(401).send("Invalid username or password");
     }
 
@@ -80,11 +84,11 @@ app.post("/login", async (req, res) => {
     const match = await bcrypt.compare(pass, foundUser.password_hash);
 
     if (!match) {
-      console.log("Password did not match"); // <-- Log 3
+      console.log("Password did not match");
       return res.status(401).send("Invalid username or password");
     }
 
-    console.log(`Login successful! Role: ${foundUser.role}`); // <-- Log 4
+    console.log(`Login successful! Role: ${foundUser.role}`);
     
     if (foundUser.role === "admin") {
       res.redirect("/adminsection/a-dashboard.html");
@@ -98,9 +102,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
-
-// Get all cards for the inventory page
+// 5. INVENTORY MANAGEMENT ENDPOINTS
 app.get("/inventory", async (req, res) => {
   try {
     const query = `
@@ -122,10 +124,6 @@ app.get("/inventory", async (req, res) => {
   }
 });
 
-// admin pages
-
-//cust-order
-//inv-prices
 app.get('/inventoryprices', async (req, res) => {
   try {
     const query = `
@@ -139,7 +137,6 @@ app.get('/inventoryprices', async (req, res) => {
       LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
       LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
     `;
-    // Fixed: Changed from db.execute to db.query
     const [cards] = await db.query(query); 
     res.json(cards); 
   } catch (err) {
@@ -148,11 +145,7 @@ app.get('/inventoryprices', async (req, res) => {
   }
 });
 
-//data-man
-//add
-//edit
-//insert a new card
-//
+// 6. PUPPETEER EXPORT ROUTE
 app.get("/download-pdf", async (req, res) => {
   let browser;
   try {
@@ -167,7 +160,6 @@ app.get("/download-pdf", async (req, res) => {
       LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
       LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
     `;
-    // Fixed: Changed from db.query to ensure safe handling
     const [cards] = await db.query(query);
 
     let tableRows = "";
@@ -213,7 +205,6 @@ app.get("/download-pdf", async (req, res) => {
       </html>
     `;
 
-    // Fixed: Added flags to bypass local folder restrictions
     browser = await puppeteer.launch({
       headless: "new",
       args: [
@@ -242,14 +233,11 @@ app.get("/download-pdf", async (req, res) => {
   } catch (err) {
     console.error("Puppeteer PDF generation failed:", err);
     if (browser) await browser.close();
-    
-    res.status(500).send(`Failed to compile document ledger. Error: ${err.message}`);
+    res.status(500).send(`Failed to compile document ledger. Error: ${err.message || JSON.stringify(err) || err}`);
   }
 });
 
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// 7. WEB TRAFFIC BOUNDS
+app.listen(3000, () => {
+    console.log(`Server running on port 3000`);
 });
