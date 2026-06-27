@@ -151,41 +151,98 @@ app.get('/inventoryprices', async (req, res) => {
 app.get("/download-pdf", async (req, res) => {
   let browser;
   try {
-    // 1. Launch with flags required for cloud platforms like Render
+    // 1. Grab the clean data directly from your database right here
+    const query = `
+      SELECT 
+        p.poke_name, 
+        c.condition_id, 
+        c.variant_id, 
+        c.final_price
+      FROM tbl_cards c
+      LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+      LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
+      LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
+    `;
+    const [cards] = await db.query(query);
+
+    // 2. Build the HTML Table Rows dynamically from the query data
+    let tableRows = "";
+    cards.forEach(card => {
+      tableRows += `
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 10px;"><strong>${card.poke_name || 'Unknown'}</strong></td>
+          <td style="padding: 10px;">${card.condition_id || 'N/A'}</td>
+          <td style="padding: 10px;">${card.variant_id || 'N/A'}</td>
+          <td style="padding: 10px; color: #4caf50;">$${Number(card.final_price || 0).toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    // 3. Define the exact HTML structure you want printed
+    const pdfHtmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; background-color: #12121c; color: white; padding: 30px; }
+            h1 { color: #ef5350; text-align: center; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background-color: #1a1924; color: white; padding: 12px; text-align: left; }
+            td { padding: 12px; color: #e0e0e0; }
+          </style>
+        </head>
+        <body>
+          <h1>Team Rocket Co. - Inventory Report</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Card Name</th>
+                <th>Condition</th>
+                <th>Variant</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // 4. Launch Puppeteer with the fixed security flags
     browser = await puppeteer.launch({
       headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+      args: [
+        "--no-sandbox", 
+        "--disable-setuid-sandbox",
+        "--allow-file-access-from-files",
+        "--disable-web-security"
+      ]
     });
     
     const page = await browser.newPage();
 
-    // 2. Point it to your live inventory page
-    // Note: 'networkidle0' tells Puppeteer to wait until your database API fetch is totally done loading rows
-    await page.goto("https://teamrocketco.onrender.com/inv-prices.html", {
-      waitUntil: "networkidle0"
-    });
+    // 5. INSTEAD OF GOTO: Inject the raw HTML directly into the page!
+    await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
 
-    // 3. Generate the PDF into a binary stream (Buffer) instead of saving to disk
+    // 6. Generate the PDF
     const pdfBuffer = await page.pdf({
       format: "A4",
-      printBackground: true, // Crucial to keep your dark theme colors!
+      printBackground: true, 
       margin: { top: "15mm", bottom: "15mm", left: "15mm", right: "15mm" }
     });
 
-    // 4. Wrap the process and close the browser instance
     await browser.close();
 
-    // 5. Send the file downstream to the user's browser as an immediate download attachment
+    // 7. Stream the file download to the user
     res.contentType("application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=inventory-report.pdf");
     res.send(pdfBuffer);
 
   } catch (err) {
     console.error("Puppeteer PDF generation failed:", err);
-    
-    // Safely kill the browser process if it crashed mid-run to save RAM
     if (browser) await browser.close();
-    
     res.status(500).send("Failed to compile document ledger.");
   }
 });
