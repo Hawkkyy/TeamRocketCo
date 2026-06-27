@@ -244,40 +244,43 @@ app.listen(3000, () => {
 
 
 //stfff
-// ADD TO THE BOTTOM OF INVENTORY.JS
-// This attaches an Order Button click redirect handler directly to your project's active modal structure
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("details-modal");
-    if (modal) {
-        // Create an order button dynamically so you don't alter raw html structure
-        const orderBtn = document.createElement("button");
-        orderBtn.innerText = "Proceed to Buy / Sell / Trade";
-        orderBtn.style.cssText = "margin-top: 15px; width: 100%; padding: 10px; background: #d40000; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;";
-        
-        // Append it cleanly to your modal info block
-        const infoBlock = modal.querySelector(".modal-info") || modal;
-        infoBlock.appendChild(orderBtn);
+// PASTE THIS AT THE BOTTOM OF NODEJS.TXT (RIGHT BEFORE APP.LISTEN)
+app.post("/process-order", async (req, res) => {
+  const { cardId, action, qty } = req.body;
 
-        orderBtn.addEventListener("click", () => {
-            // Find out which card ID is currently selected via your script logic context variables
-            if (typeof selectedCardId !== "undefined" && selectedCardId) {
-                window.location.href = `order.html?cardId=${selectedCardId}`;
-            } else {
-                // Fallback approach: find via current display matching rules
-                const currentName = document.getElementById("modal-name")?.innerText?.toLowerCase();
-                if (currentName) {
-                    fetch(`${BACKEND_URL}/inventory`)
-                        .then(res => res.json())
-                        .then(inventory => {
-                            const found = inventory.find(i => i.poke_name.toLowerCase() === currentName);
-                            if (found) {
-                                window.location.href = `order.html?cardId=${found.card_id}`;
-                            } else {
-                                alert("Please select a valid card first!");
-                            }
-                        });
-                }
-            }
-        });
+  if (!cardId || !action || !qty || qty <= 0) {
+    return res.status(400).send("Invalid input values.");
+  }
+
+  try {
+    // 1. Check current stock levels
+    const [cards] = await pool.query("SELECT * FROM tbl_cards WHERE card_id = ?", [cardId]);
+    if (cards.length === 0) {
+      return res.status(404).send("Card not found in system repository.");
     }
+
+    const currentStock = cards[0].stock_qty;
+    let computedStock = currentStock;
+
+    // 2. Adjust database stock values conditionally matching actions
+    if (action === "buy") {
+      if (currentStock < qty) {
+        return res.status(400).send("Insufficient stock on shelves.");
+      }
+      computedStock = currentStock - qty;
+    } else if (action === "sell") {
+      computedStock = currentStock + qty;
+    } else if (action === "trade") {
+      computedStock = currentStock; // Trades record status info without changing quantities instantly
+    } else {
+      return res.status(400).send("Unknown action value.");
+    }
+
+    // 3. Commit modification updates
+    await pool.query("UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", [computedStock, cardId]);
+    res.status(200).send("Database stock balances successfully verified and synchronized.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database error context fault processing updates.");
+  }
 });
