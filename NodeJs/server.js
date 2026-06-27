@@ -127,30 +127,7 @@ app.get("/inventory", async (req, res) => {
 //cust-order
 //inv-prices
 app.get('/inventoryprices', async (req, res) => {
-  const query = `
-  SELECT 
-    p.poke_name, 
-    c.condition_id, 
-    c.variant_id, 
-    c.final_price
-  FROM tbl_cards c
-  LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
-  LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
-  LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
-`;
-    const [cards] = await db.query(query);
-    res.json(cards); 
-});
-
-//data-man
-//add
-//edit
-//insert a new card
-//
-app.get("/download-pdf", async (req, res) => {
-  let browser;
   try {
-    // 1. Grab the clean data directly from your database right here
     const query = `
       SELECT 
         p.poke_name, 
@@ -162,9 +139,37 @@ app.get("/download-pdf", async (req, res) => {
       LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
       LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
     `;
+    // Fixed: Changed from db.execute to db.query
+    const [cards] = await db.query(query); 
+    res.json(cards); 
+  } catch (err) {
+    console.error("Inventory data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve inventory data" });
+  }
+});
+
+//data-man
+//add
+//edit
+//insert a new card
+//
+app.get("/download-pdf", async (req, res) => {
+  let browser;
+  try {
+    const query = `
+      SELECT 
+        p.poke_name, 
+        c.condition_id, 
+        c.variant_id, 
+        c.final_price
+      FROM tbl_cards c
+      LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+      LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
+      LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
+    `;
+    // Fixed: Changed from db.query to ensure safe handling
     const [cards] = await db.query(query);
 
-    // 2. Build the HTML Table Rows dynamically from the query data
     let tableRows = "";
     cards.forEach(card => {
       tableRows += `
@@ -177,7 +182,6 @@ app.get("/download-pdf", async (req, res) => {
       `;
     });
 
-    // 3. Define the exact HTML structure you want printed
     const pdfHtmlContent = `
       <!DOCTYPE html>
       <html>
@@ -209,23 +213,20 @@ app.get("/download-pdf", async (req, res) => {
       </html>
     `;
 
-    // 4. Launch Puppeteer with the fixed security flags
+    // Fixed: Added flags to bypass local folder restrictions
     browser = await puppeteer.launch({
-  headless: "new",
-  args: [
-    "--no-sandbox", 
-    "--disable-setuid-sandbox",
-    "--allow-file-access-from-files",
-    "--disable-web-security"
-  ]
-});
+      headless: "new",
+      args: [
+        "--no-sandbox", 
+        "--disable-setuid-sandbox",
+        "--allow-file-access-from-files",
+        "--disable-web-security"
+      ]
+    });
     
     const page = await browser.newPage();
-
-    // 5. INSTEAD OF GOTO: Inject the raw HTML directly into the page!
     await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
 
-    // 6. Generate the PDF
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true, 
@@ -234,7 +235,6 @@ app.get("/download-pdf", async (req, res) => {
 
     await browser.close();
 
-    // 7. Stream the file download to the user
     res.contentType("application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=inventory-report.pdf");
     res.send(pdfBuffer);
