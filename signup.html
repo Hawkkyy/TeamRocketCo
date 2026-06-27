@@ -30,19 +30,24 @@
             <div class="login">
                 <form name="signUpForm" action="https://teamrocketco.onrender.com/register" onsubmit="return validateForm()" method="POST">
 
-                    Username: <input type="text" name="user">   <br>
-                    First Name: <input type="text" name="fname"> <br>
-                    Last Name: <input type="text" name="lname">  <br>
-                    Contact No.: <input type="text" name="cont"><br>
-                    Area Code: <input type="text" name="area">  <br>
-                    Password: <input type="text" name="pass">   <br>
-                    <input type="submit" value="Submit">
-                    
+                    Username: <input type="text" name="user" required> <br>
+  
+                    First Name: <input type="text" name="fname" pattern="[A-Za-z ]+" title="Letters only." required> <br>
+                    Last Name: <input type="text" name="lname" pattern="[A-Za-z ]+" title="Letters only." required>  <br>
+  
+                    Contact No.: <input type="text" name="cont" pattern="[0-9]+" title="Numbers only." required><br>
+  
+                    Area Code: <input type="number" name="area" required>  <br>
+  
+                    Password: <input type="password" name="pass" required>   <br>
+  
+                                <input type="submit" value="Submit">
+                                
+                    <input class="sw" type="button" onclick="window.location.href='login.html'" value="Have an account? Log-in!">
                 </form> <br>
                 
                 
-                <input type="signUp" onclick="window.location.href='login.html'" value="Have an account? Log-in!" >
-                </input>
+                
 
 
             </div>
