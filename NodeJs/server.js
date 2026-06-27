@@ -1,3 +1,5 @@
+const path = require("path");
+
 require("dotenv").config({ path: "./server.env" });
 
 const express = require("express");
@@ -9,7 +11,7 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "../public")));
 
 const pool = mysql.createPool({
   uri: process.env.DATABASE_URL, 
