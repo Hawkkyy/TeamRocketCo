@@ -243,44 +243,89 @@ app.listen(3000, () => {
 });
 
 
-//stfff
+//I HATE MY LIFE AND I WANNA DIE
 // PASTE THIS AT THE BOTTOM OF NODEJS.TXT (RIGHT BEFORE APP.LISTEN)
 app.post("/process-order", async (req, res) => {
   const { cardId, action, qty } = req.body;
+  
+  // Using a default fallback user_id (e.g., 1) for testing if an active session state isn't passed
+  const userId = req.body.userId || 1; 
 
   if (!cardId || !action || !qty || qty <= 0) {
-    return res.status(400).send("Invalid input values.");
+    return res.status(400).send("Invalid input data provided.");
   }
 
+  // Format action string to match ENUM('Buy','Sell', 'Trade') casing exactly
+  const orderType = action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
+
+  // Get a connection from the pool to run a multi-step safe transaction sequence
+  const connection = await pool.getConnection();
+
   try {
-    // 1. Check current stock levels
-    const [cards] = await pool.query("SELECT * FROM tbl_cards WHERE card_id = ?", [cardId]);
+    await connection.beginTransaction();
+
+    // Step 1: Retrieve the card record and determine its price evaluation structure
+    const [cards] = await connection.query(
+      "SELECT c.*, p.base_price FROM tbl_cards c JOIN tbl_pokemons p ON c.poke_id = p.poke_id WHERE c.card_id = ?", 
+      [cardId]
+    );
+    
     if (cards.length === 0) {
-      return res.status(404).send("Card not found in system repository.");
+      await connection.rollback();
+      return res.status(404).send("Card not found in database registry.");
     }
 
-    const currentStock = cards[0].stock_qty;
-    let computedStock = currentStock;
+    const cardRecord = cards[0];
+    const currentStock = cardRecord.stock_qty;
+    // Use final_price if set, otherwise fall back to pokemon base_price
+    const pricePerUnit = parseFloat(cardRecord.final_price) || parseFloat(cardRecord.base_price || 0);
+    const totalPrice = pricePerUnit * qty;
+    
+    let updatedStock = currentStock;
 
-    // 2. Adjust database stock values conditionally matching actions
-    if (action === "buy") {
+    // Step 2: Validate inventory conditions based on customer action choice
+    if (action.toLowerCase() === "buy") {
       if (currentStock < qty) {
-        return res.status(400).send("Insufficient stock on shelves.");
+        await connection.rollback();
+        return res.status(400).send(`Insufficient items. Only ${currentStock} units available.`);
       }
-      computedStock = currentStock - qty;
-    } else if (action === "sell") {
-      computedStock = currentStock + qty;
-    } else if (action === "trade") {
-      computedStock = currentStock; // Trades record status info without changing quantities instantly
-    } else {
-      return res.status(400).send("Unknown action value.");
+      updatedStock = currentStock - qty;
+    } else if (action.toLowerCase() === "sell") {
+      updatedStock = currentStock + qty;
+    } else if (action.toLowerCase() === "trade") {
+      // Trade creates records but does not immediately alter quantities until review
+      updatedStock = currentStock;
     }
 
-    // 3. Commit modification updates
-    await pool.query("UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", [computedStock, cardId]);
-    res.status(200).send("Database stock balances successfully verified and synchronized.");
+    // Step 3: Update stock count inside tbl_cards
+    await connection.query(
+      "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
+      [updatedStock, cardId]
+    );
+
+    // Step 4: Insert parent log inside tbl_transactions
+    const [txResult] = await connection.query(
+      "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
+      [userId, orderType, totalPrice]
+    );
+    const newTransactionId = txResult.insertId;
+
+    // Step 5: Insert granular mapping item inside tbl_transaction_items
+    await connection.query(
+      "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
+      [newTransactionId, cardId, qty, totalPrice]
+    );
+
+    // Commit all changes since everything completed successfully
+    await connection.commit();
+    res.status(200).send("Order confirmed successfully! Database ledger logs initialized.");
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Database error context fault processing updates.");
+    // If any error happens, cancel database edits to protect system integrity
+    await connection.rollback();
+    console.error("Transaction failed, rolled back:", err);
+    res.status(500).send(`Database operation error context trace: ${err.message}`);
+  } finally {
+    connection.release();
   }
 });
