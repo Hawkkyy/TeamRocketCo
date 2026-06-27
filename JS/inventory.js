@@ -1,40 +1,51 @@
-// frontend
-const TCGdex = require('@tcgdex/sdk').default;
+const BACKEND_URL = "http://localhost:3000"; // Swap with your live Railway domain when deployed
 
-const tcgdex = new TCGdex('en');
+async function setupInventoryClicks() {
+    try {
+        // 1. Fetch real-time data from Railway MySQL instance
+        const response = await fetch(`${BACKEND_URL}/inventory`);
+        const dbInventory = await response.json();
+        
+        // 2. Select all images inside your original HTML table
+        const cardImages = document.querySelectorAll("main table img");
+        const modal = document.getElementById("details-modal");
 
-async function loadCard(cardId) {
+        cardImages.forEach(img => {
+            // Make individual images responsive to hover styling via JS cursor indication
+            img.style.cursor = "pointer";
 
-            //const res = await fetch(`http://localhost:3000/card/${cardId}`);
-            //const data = await res.json();
+            img.addEventListener("click", () => {
+                const pokemonName = img.getAttribute("alt").toLowerCase();
+                
+                // Find matching card record from the backend join payload
+                const cardData = dbInventory.find(item => item.poke_name.toLowerCase() === pokemonName);
 
-            const data = await tcgdex.fetch('sets', 'base1', cardId);
+                // Update information dynamically inside the popup modal
+                document.getElementById("modal-img").src = img.src;
+                document.getElementById("modal-name").innerText = img.getAttribute("alt").toUpperCase();
 
-            document.getElementById("name").innerText = data.name;
-            document.getElementById("image").src = data.image;
-        }
+                if (cardData) {
+                    document.getElementById("modal-price").innerText = `₱${cardData.base_price}`;
+                    document.getElementById("modal-stock").innerText = cardData.stock_qty;
+                    
+                    // Route to the order page when the action triggers
+                    document.getElementById("modal-buy-btn").onclick = () => {
+                        window.location.href = `order.html?cardId=${cardData.card_id}&action=buy`;
+                    };
+                } else {
+                    // Fallback block if the database hasn't populated this specific card record yet
+                    document.getElementById("modal-price").innerText = "Not Available";
+                    document.getElementById("modal-stock").innerText = "0";
+                    document.getElementById("modal-buy-btn").onclick = null;
+                }
 
-        window.onload = loadCard;
-
-
-<script>
-function light(sw) {
-  var pic;
-  if (sw == 0) {
-    pic = "pic_bulboff.gif"
-  } else {
-    pic = "pic_bulbon.gif"
-  }
-  document.getElementById('myImage').src = pic;
+                // Show modal overlay
+                modal.style.display = "flex";
+            });
+        });
+    } catch (error) {
+        console.error("Error setting up table database connections:", error);
+    }
 }
-</script>
 
-<img id="myImage" src="pic_bulboff.gif" width="100" height="180">
-
-<p>
-<button type="button" onclick="light(1)">Light On</button>
-<button type="button" onclick="light(0)">Light Off</button>
-</p>
-
-</body>
-</html>
+window.onload = setupInventoryClicks;

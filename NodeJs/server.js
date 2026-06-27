@@ -54,3 +54,25 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+// Get all cards for the inventory page
+app.get("/inventory", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        c.card_id, 
+        p.poke_name, 
+        p.base_price, 
+        c.stock_qty, 
+        c.condition_id, 
+        c.variant_id
+      FROM tbl_cards c
+      JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+    `;
+    const [rows] = await db.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to retrieve inventory data" });
+  }
+});
