@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://localhost:3000"; // Swap with your live Railway domain when deployed
+const BACKEND_URL = "https://teamrocketco.onrender.com"; // Swap with your live Railway domain when deployed
 
 async function setupInventoryClicks() {
     try {
