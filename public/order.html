@@ -1,176 +1,67 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="CSS/styles.css">
-        <link rel="icon" type="" href="imgs/RLogo.png"> 
-        <title> Team Rocket Co. </title>
-    </head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/styles.css">
+    <link rel="icon" href="imgs/RLogo.png"> 
+    <title>Team Rocket Co. - Process Transaction</title>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html"><img src="imgs/TeamRocketLogo.png" alt="logo" style="height: 100px;"></a> </li>
+                <li><a class="navi" href="index.html">Home</a></li>
+                <li><a class="navi" href="inventory.html">Card Inventory</a></li>
+                <li><a class="navi" href="about-us.html">About Us</a></li>
+                <li><a class="navi" href="login.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <body>
-         <header>
-            <nav>
-                <ul>
-                    <li><a href="index.html"><img src="imgs/TeamRocketLogo.png" alt="logo" style="width:100%px;height: 100px;"></a> </li>
-                    <li><a class="navi" href="index.html">Home</a></li>
-                    <li><a class="navi" href="about-us.html">About Us</a></li>
-                    <li><a class="navi" href="services.html">Services</a></li>
-                    <li><a class="navi" href="contact-us.html">Contact Us</a></li>
-                    <li><a class="navi"  href="login.html">Login</a></li>
-                </ul>
-            </nav>
-        </header>
-         
-        <!-- ======= Main Content ======= -->
-         <main>
-            <img src="imgs/TeamRocketLogo.png" alt="Team Rocket" style="width:40%;height: 40%;">
-            <h1> Order your TCG Card</h1>
-            <div class="login">
-                <form name="orderForm" action="" onsubmit="return validateForm()" method="post">
-                    Card:
-                    <datalist id="cards">
+    <main style="max-width: 600px; margin: 40px auto; padding: 20px; background: #111122; border: 2px solid #d40000; border-radius: 8px;">
+        <h1 style="color: #ef5350; text-align: center;">Place an Order</h1>
+        
+        <div id="order-card-details" style="text-align: center; margin-bottom: 20px;">
+            <h3 id="card-name-display" style="font-size: 24px; color: #fff;">Loading Card Info...</h3>
+            <p id="card-meta-display" style="color: #aaa; margin: 5px 0;"></p>
+            <p style="font-size: 20px; color: #4caf50;">Price: <span id="card-price-display">₱0.00</span></p>
+            <p style="color: #e0e0e0;">Current Stock Availability: <span id="card-stock-display">0</span></p>
+        </div>
 
-  <option value="Alakazam">
-  <option value="Blastoise">
-  <option value="Chansey">
-  <option value="Charizard">
-  <option value="Clefairy">
-  <option value="Gyarados">
-  <option value="Hitmonchan">
-  <option value="Machamp">
-  <option value="Magneton">
-  <option value="Mewtwo">
-  <option value="Nidoking">
-  <option value="Ninetales">
-  <option value="Poliwrath">
-  <option value="Raichu">
-  <option value="Venusaur">
-  <option value="Zapdos">
+        <form id="orderForm" style="display: flex; flex-direction: column; gap: 15px;">
+            <label for="transactionType">Transaction Action:</label>
+            <select id="transactionType" style="padding: 10px; border-radius: 4px; background: #22003d; color: white;" required>
+                <option value="buy">Buy (Purchase Card)</option>
+                <option value="sell">Sell (Trade-In to Shop)</option>
+                <option value="trade">Trade (Exchange Request)</option>
+            </select>
 
-  <option value="Beedrill">
-  <option value="Dragonair">
-  <option value="Dugtrio">
-  <option value="Electabuzz">
-  <option value="Electrode">
-  <option value="Pidgeotto">
+            <label for="orderQty">Quantity:</label>
+            <input type="number" id="orderQty" min="1" value="1" style="padding: 10px; border-radius: 4px;" required>
 
-  <option value="Arcanine">
-  <option value="Charmeleon">
-  <option value="Dewgong">
-  <option value="Dratini">
-  <option value="Farfetch'd">
-  <option value="Growlithe">
-  <option value="Haunter">
-  <option value="Ivysaur">
-  <option value="Jynx">
-  <option value="Kadabra">
-  <option value="Kakuna">
-  <option value="Machoke">
-  <option value="Magikarp">
-  <option value="Magmar">
-  <option value="Nidorino">
-  <option value="Poliwhirl">
-  <option value="Porygon">
-  <option value="Raticate">
-  <option value="Seel">
-  <option value="Wartortle">
-
-  <option value="Abra">
-  <option value="Bulbasaur">
-  <option value="Caterpie">
-  <option value="Charmander">
-  <option value="Diglett">
-  <option value="Doduo">
-  <option value="Drowzee">
-  <option value="Gastly">
-  <option value="Koffing">
-  <option value="Machop">
-  <option value="Magnemite">
-  <option value="Metapod">
-  <option value="Nidoran♂">
-  <option value="Onix">
-  <option value="Pidgey">
-  <option value="Pikachu">
-  <option value="Poliwag">
-  <option value="Ponyta">
-  <option value="Rattata">
-  <option value="Sandshrew">
-  <option value="Squirtle">
-  <option value="Starmie">
-  <option value="Staryu">
-  <option value="Tangela">
-  <option value="Voltorb">
-  <option value="Vulpix">
-  <option value="Weedle">
-
-  <option value="Clefairy Doll">
-  <option value="Computer Search">
-  <option value="Devolution Spray">
-  <option value="Imposter Professor Oak">
-  <option value="Item Finder">
-  <option value="Lass">
-  <option value="Pokémon Breeder">
-  <option value="Pokémon Trader">
-  <option value="Scoop Up">
-  <option value="Super Energy Removal">
-
-  <option value="Defender">
-  <option value="Energy Retrieval">
-  <option value="Full Heal">
-  <option value="Maintenance">
-  <option value="PlusPower">
-  <option value="Pokémon Center">
-  <option value="Pokémon Flute">
-  <option value="Pokédex">
-  <option value="Professor Oak">
-  <option value="Revive">
-  <option value="Super Potion">
-
-  <option value="Bill">
-  <option value="Energy Removal">
-  <option value="Gust of Wind">
-  <option value="Potion">
-  <option value="Switch">
-
-  <option value="Double Colorless Energy">
-  <option value="Fighting Energy">
-  <option value="Fire Energy">
-  <option value="Grass Energy">
-  <option value="Lightning Energy">
-  <option value="Psychic Energy">
-  <option value="Water Energy">
-
-</datalist>
-                                                        <input type="text" id="card" name="card" list="cards"><br>   
-                    Order Type:                     
-                    <select id="type">
-                        <option>Buy</option>
-                        <option>Sell</option>
-                        <option>Trade</option>
-                    </select><br>
-                    Cards from Team Rocket Co.:         <input type="number" id="qtyAdmin" name="qtyAdmin"><br>
-                    Cards from Customer:                <input type="number" id="qtyCust" name="qtyCust"><br>
-                    Total Amount:                       <input type="text" id="tAmount" name="tAmount">
-                    <input type="submit" value="Submit">
-                </form> 
+            <div id="confirmationBox" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; display: none; border-left: 4px solid #ef5350;">
+                <h4 style="margin: 0 0 10px 0; color: #ff4040;">Review & Confirm Summary</h4>
+                <p id="confirmationText" style="margin: 0; line-height: 1.5; color: #fff;"></p>
+                <button type="button" id="finalConfirmBtn" style="margin-top: 15px; width: 100%; padding: 10px; background: #4caf50; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer;">
+                    Confirm Transaction
+                </button>
             </div>
-            <img src="" alt="Team Rocket">
-         </main>
-        <!-- ======= End ======= -->
 
-        <footer>
-            <p>Group 5 / teamrocketco@gmail.com / (02) 8911-1111 / 8353-9887 </p>
-            <p> Copyright @2026 </p>
-            <nav>
-                <ul>
-                    <li><a class="navi" href="index.html">Home</a></li>
-                    <li><a class="navi" href="about-us.html">About Us</a></li>
-                    <li><a class="navi" href="services.html">Services</a></li>
-                    <li><a class="navi" href="contact-us.html">Contact Us</a></li>
-                </ul>
-            </nav>
-        </footer>
+            <button type="submit" id="initiateOrderBtn" style="padding: 12px; background: #ef5350; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer;">
+                Proceed to Confirmation
+            </button>
+        </form>
+    </main>
 
-        <script src="js/order.js" defer></script>
+    <footer>
+        <p>Group 5 / teamrocketco@gmail.com / (02) 8911-1111 / 8353-9887 </p>
+        <p>Copyright @2026</p>
+    </footer>
 
-    </body>
+    <script src="order.js"></script>
+</body>
 </html>
