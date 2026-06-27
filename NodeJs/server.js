@@ -3,7 +3,7 @@ require("dotenv").config({ path: "./server.env" });
 
 const express = require("express");
 const mysql = require("mysql2");
-
+const cors = require("cors");
 
 
 const app = express();
@@ -58,10 +58,16 @@ app.post("/register", async (req, res) => {
     // Send a success response back to the browser
     res.send("Account successfully created!");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create user", details: err.message });
-  }
-});
+  console.error(err); // This prints it to your Render dashboard logs
+  
+  // FIX: This will send the full error details back to your browser screen
+  res.status(500).json({ 
+    error: "Failed to create user", 
+    details: err.message || JSON.stringify(err) 
+  });
+}
+};
+
 
 // 6. Start listening
 const PORT = process.env.PORT || 3000;
