@@ -1,12 +1,13 @@
-// 1. Load environment variables first so they are available for the database configuration
+// 1. Load environment variables. 
+// It safely attempts to find server.env locally, but won't crash if it's missing on Render.
 require("dotenv").config({ path: "./server.env" });
 
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 
-
 const app = express();
+app.use(cors()); // Critical for frontend communication
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -30,7 +31,7 @@ app.get("/", (req, res) => {
     res.send("Server is working");
 });
 
-// 5. Database query route (now 'db' and 'app' are fully defined and ready to go)
+// 5. Database query route
 app.get("/users", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM tbl_users");
@@ -41,33 +42,25 @@ app.get("/users", async (req, res) => {
   }
 });
 
-//signUp ( Add Users )
-
+// signUp ( Add Users )
 app.post("/register", async (req, res) => {
   try {
-    // Grab data from the HTML input 'name' attributes
     const { user, fname, lname, cont, area, pass } = req.body; 
 
-    // SQL query pointing to your table (tbl_users)
     const sql = "INSERT INTO tbl_users (username, firstname, lastname, contact_no, area_code, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
     const defaultRole = "user";
 
-    // Execute using your promise-based 'db' variable
-    await db.query(sql, [ user, fname, lname, cont, area, pass, defaultRole]);
-    // Send a success response back to the browser
+    await db.query(sql, [user, fname, lname, cont, area, pass, defaultRole]);
+    
     res.send("Account successfully created!");
   } catch (err) {
-  console.error(err); // This prints it to your Render dashboard logs
-  
-  // FIX: This will send the full error details back to your browser screen
-  res.status(500).json({ 
-    error: "Failed to create user", 
-    details: err.message || JSON.stringify(err) 
-  });
-}
-};
-
+    console.error(err); 
+    res.status(500).json({ 
+      error: "Failed to create user", 
+      details: err.message || JSON.stringify(err) 
+    });
+  } // Cleanly closes catch block
+}); // Cleanly closes app.post route without syntax clutter
 
 // 6. Start listening
 const PORT = process.env.PORT || 3000;
