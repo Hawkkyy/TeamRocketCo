@@ -243,27 +243,22 @@ app.listen(3000, () => {
 });
 
 
-//I HATE MY LIFE AND I WANNA DIE
-// =========================================================================
-// MARIELE'S TRANSACTION ENGINE ENDPOINT - PASTE AT THE BOTTOM OF NODEJS.TXT
-// =========================================================================
-// POST ENDPOINT FOR MANAGING INVENTORY STOCK TRANSACTIONS
+
+// REPLACE YOUR ENTIRE /transaction ROUTE WITH THIS:
+// ==========================================
 app.post("/transaction", async (req, res) => {
-    // 1. Destructure fields matches matching the frontend payload properties
     const { userId, cardId, orderType, qty, totalPrice } = req.body;
 
     if (!userId || !cardId || !orderType || !qty) {
         return res.status(400).send("Missing mandatory transaction details.");
     }
 
-    // Get an atomic connection channel from the pool
     const connection = await db.getConnection();
 
     try {
-        // Begin Transaction scope explicitly
         await connection.beginTransaction();
 
-        // 2. Fetch current stock figures from tbl_cards 
+        // 1. Fetch current stock figures from tbl_cards 
         const [cardRows] = await connection.query(
             "SELECT stock_qty FROM tbl_cards WHERE card_id = ?", 
             [cardId]
@@ -276,7 +271,7 @@ app.post("/transaction", async (req, res) => {
         const dbStock = cardRows[0].stock_qty;
         let updatedStock = dbStock;
 
-        // Apply rules matching the specified transaction actions
+        // 2. Adjust inventory balances according to the transaction type
         if (orderType === "BUY") {
             if (dbStock < qty) {
                 return res.status(400).send(`Insufficient card shop inventory stock. Available: ${dbStock}`);
@@ -285,19 +280,18 @@ app.post("/transaction", async (req, res) => {
         } else if (orderType === "SELL") {
             updatedStock = dbStock + qty; // Customer sells -> Shop gains stock
         } else if (orderType === "TRADE") {
-            // Keep stock balance unchanged for direct 1-to-1 trades or define custom business rules
-            updatedStock = dbStock;
+            updatedStock = dbStock; // Trade doesn't change catalog item total balance automatically
         } else {
             throw new Error("Invalid transaction type processed.");
         }
 
-        // 3. Update dynamic stock status metrics down inside tbl_cards
+        // 3. Update stock inside tbl_cards
         await connection.query(
             "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
             [updatedStock, cardId]
         );
 
-        // 4. Record row inside main log ledger table (tbl_transactions)
+        // 4. Save details inside tbl_transactions (Matches Data Dictionary)
         const [txResult] = await connection.query(
             "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
             [userId, orderType, totalPrice]
@@ -305,24 +299,21 @@ app.post("/transaction", async (req, res) => {
         
         const newTransactionId = txResult.insertId;
 
-        // 5. Connect maps inside breakdown registry table (tbl_transaction_items)
-        // Adjust column mappings to perfectly match your target data layout parameters
+        // 5. Save breakdown inside tbl_transaction_items (Matches Data Dictionary columns)
+        // Passes 0 for qty_admin, and customer quantity into qty_cust
         await connection.query(
             "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
             [newTransactionId, cardId, qty, totalPrice]
         );
 
-        // Everything succeeded safely -> commit changes permanently
         await connection.commit();
         res.status(200).send(`Transaction (${orderType}) registered successfully!`);
 
     } catch (err) {
-        // Rollback details safely if an error breaks our chain pipeline
         await connection.rollback();
         console.error("Transaction failed, execution rolled back:", err);
         res.status(500).send(`System error processing order logs: ${err.message}`);
     } finally {
-        // Yield connection slot tracking back up to active pool handlers
         connection.release();
     }
 });
