@@ -56,30 +56,33 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { user, pass } = req.body;
+    console.log(`Checking login for user: ${user}`); // <-- Log 1
 
     const [rows] = await db.query("SELECT * FROM tbl_users WHERE username = ?", [user]);
 
     if (rows.length === 0) {
+      console.log("User not found in database"); // <-- Log 2
       return res.status(401).send("Invalid username or password");
     }
 
     const foundUser = rows[0];
-
     const match = await bcrypt.compare(pass, foundUser.password_hash);
 
     if (!match) {
+      console.log("Password did not match"); // <-- Log 3
       return res.status(401).send("Invalid username or password");
     }
 
+    console.log(`Login successful! Role: ${foundUser.role}`); // <-- Log 4
+    
     if (foundUser.role === "admin") {
-      res.redirect("/asection/a-dashboard.html");
+      res.redirect("/adminsection/a-dashboard.html");
     } else {
-      // Send them to the regular user home page
       res.redirect("/inventory.html");
     }
 
   } catch (err) {
-    console.error(err);
+    console.error("Login route error:", err);
     res.status(500).send("Login error occurred");
   }
 });
