@@ -138,7 +138,7 @@ app.get('/inventoryprices', async (req, res) => {
   LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
   LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
 `;
-    const [cards] = await db.execute(query);
+    const [cards] = await db.query(query);
     res.json(cards); 
 });
 
