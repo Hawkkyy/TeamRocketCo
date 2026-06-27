@@ -1,5 +1,4 @@
 const path = require("path");
-
 require("dotenv").config({ path: "./server.env" });
 
 const express = require("express");
@@ -8,11 +7,12 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const puppeteer = require("puppeteer");
 
+const app = express(); 
+
 app.use(cors({
   origin: ['https://hawkkyy.github.io', 'http://localhost:3000'],
   credentials: true
 }));
-
 
 
 app.use(express.json());
