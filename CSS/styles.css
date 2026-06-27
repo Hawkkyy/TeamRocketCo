@@ -205,11 +205,23 @@ table img:hover {
     font-weight: bold;
 }
 
+.login input[type="signUp"] {
+    background: #d40000;
+    color: white;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
 .login input[type="submit"]:hover {
     background: #ff4040;
 }
 
-
+.login input[type="signUp"]:hover {
+    background: #ff4040;
+}
 
 footer {
     margin-top: 40px;

@@ -26,17 +26,22 @@
         <!-- ======= Main Content ======= -->
          <main>
             <img src="imgs/TeamRocketLogo.png" alt="Team Rocket" style="width:40%;height: 40%;">
-            <h2> Login </h2>
+            <h2> Sign Up! </h2>
             <div class="login">
-                <form name="loginForm" action="" onsubmit="return validateForm()" method="post">
-                    Username: <input type="text" name="user"><br>
-                    Password: <input type="text" name="pass">
+                <form name="signUpForm" action="https://teamrocketco.onrender.com/register" onsubmit="return validateForm()" method="POST">
+
+                    Username: <input type="text" name="user">   <br>
+                    First Name: <input type="text" name="fname"> <br>
+                    Last Name: <input type="text" name="lname">  <br>
+                    Contact No.: <input type="text" name="cont"><br>
+                    Area Code: <input type="text" name="area">  <br>
+                    Password: <input type="text" name="pass">   <br>
                     <input type="submit" value="Submit">
                     
-                </form> 
+                </form> <br>
                 
-                <br>
-                <input type="signUp" onclick="window.location.href='signup.html'" value="No Account? Sign up!" >
+                
+                <input type="signUp" onclick="window.location.href='login.html'" value="Have an account? Log-in!" >
                 </input>
 
 
@@ -57,6 +62,6 @@
             </nav>
         </footer>
 
-        <script src="js/login.js" defer></script>
+        <script src="js/signUp.js" defer></script>
     </body>
 </html>
