@@ -106,7 +106,6 @@ header img {
 }
 
 
-
 main {
     width: 90%;
     max-width: 1200px;
@@ -325,24 +324,33 @@ footer a:hover {
 /* side nav*/
 .sidenav {
     height: 100%;
-  width: 130px;
-  position: fixed;
-  z-index: 1;
-  top: 20px;
-  left: 10px;
-  background: #eee;
-  overflow-x: hidden;
-  padding: 8px 0;
+    width: 240px;
+    top: 20px;
+    left: 10px;
+    background: rgba(255,255,255,0.05);
+    overflow-x: hidden;
+    border-right: #d40000;
 }
 
 .sidenav a {
-  padding: 0px 8px 6px 16px;
-  text-decoration: none;
-  font-size: 25px;
-  color: #2196F3;
-  display: block;
+    text-decoration: none;
+    font-size: 15px;
+    color: white;
+    font-weight: 700;
+    display: block;
+    padding-top: 20%;
+    padding-left: 20px;
+    letter-spacing: 1px;
+    transition: 0.3s;
 }
 
 .sidenav a:hover {
-  color: #064579;
+    color: #ff4040;
+    text-shadow: 0 0 8px #ff4040;
+}
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    height: 100vh;
 }
