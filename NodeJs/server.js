@@ -146,7 +146,62 @@ app.get('/inventoryprices', async (req, res) => {
   }
 });
 
-// 6. PUPPETEER EXPORT ROUTE
+
+// CARDS //
+
+// INSERT: Add a new card to the inventory
+app.post("/inventory/add", async (req, res) => {
+  try {
+    const { poke_id, condition_id, variant_id, stock_qty, final_price } = req.body;
+
+    // Validate that required fields exist
+    if (!poke_id || !condition_id || !variant_id) {
+      return res.status(400).json({ error: "Missing required card fields" });
+    }
+
+    const sql = `
+      INSERT INTO tbl_cards (poke_id, condition_id, variant_id, stock_qty, final_price) 
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    await db.query(sql, [
+      poke_id, 
+      condition_id, 
+      variant_id, 
+      stock_qty || 0, 
+      final_price || 0.00
+    ]);
+
+    res.status(201).json({ message: "Card successfully added to inventory!" });
+  } catch (err) {
+    console.error("Failed to insert card:", err);
+    res.status(500).json({ error: "Failed to add card", details: err.message });
+  }
+});
+
+// DELETE: Remove a card from the inventory by its ID
+app.delete("/inventory/delete/:id", async (req, res) => {
+  try {
+    const cardId = req.params.id;
+
+    const sql = "DELETE FROM tbl_cards WHERE card_id = ?";
+    const [result] = await db.query(sql, [cardId]);
+
+    // Check if a row was actually deleted
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Card not found or already deleted" });
+    }
+
+    res.json({ message: `Card ID ${cardId} successfully deleted!` });
+  } catch (err) {
+    console.error("Failed to delete card:", err);
+    res.status(500).json({ error: "Failed to delete card", details: err.message });
+  }
+});
+
+
+
+
 app.get("/download-pdf", async (req, res) => {
   let browser;
   try {
@@ -238,15 +293,7 @@ app.get("/download-pdf", async (req, res) => {
   }
 });
 
-// 7. WEB TRAFFIC BOUNDS
-app.listen(3000, () => {
-    console.log(`Server running on port 3000`);
-});
 
-
-
-// REPLACE YOUR ENTIRE /transaction ROUTE WITH THIS:
-// ==========================================
 app.post("/transaction", async (req, res) => {
     const { userId, cardId, orderType, qty, totalPrice } = req.body;
 
@@ -317,4 +364,9 @@ app.post("/transaction", async (req, res) => {
     } finally {
         connection.release();
     }
+});
+
+// 7. WEB TRAFFIC BOUNDS
+app.listen(3000, () => {
+    console.log(`Server running on port 3000`);
 });
