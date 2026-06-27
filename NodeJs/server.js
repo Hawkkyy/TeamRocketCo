@@ -3,6 +3,7 @@ require("dotenv").config({ path: "./server.env" });
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(cors()); 
@@ -36,10 +37,12 @@ app.post("/register", async (req, res) => {
   try {
     const { user, fname, lname, cont, area, pass } = req.body; 
 
+    const hashedPassword = await bcrypt.hash(pass, 10);
+
     const sql = "INSERT INTO tbl_users (username, firstname, lastname, contact_no, area_code, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
     const defaultRole = "user";
 
-    await db.query(sql, [user, fname, lname, cont, area, pass, defaultRole]);
+    await db.query(sql, [user, fname, lname, cont, area, hashedPassword, defaultRole]);
     res.send("Account successfully created!");
   } catch (err) {
     console.error(err); 

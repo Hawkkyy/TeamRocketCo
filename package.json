@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@tcgdex/sdk": "^2.9.0",
+    "bcrypt": "^6.0.0",
     "mysql2": "^3.22.5"
   }
 }
