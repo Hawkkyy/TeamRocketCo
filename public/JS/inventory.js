@@ -1,4 +1,18 @@
-const BACKEND_URL = "https://teamrocketco.onrender.com"; // Swap with your live Railway domain when deployed
+// MAKE SURE YOUR FRONTEND IS FETCHING REQS FROM RENDER LIKE THIS:
+const BACKEND_URL = "https://teamrocketco.onrender.com";
+
+async function loadInventory() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/inventory`);
+        const data = await response.json();
+        
+        // This is where your code updates your inventory elements/table cards
+        console.log("Database cards loaded successfully:", data);
+    } catch (error) {
+        console.error("Error loading inventory from database pool:", error);
+    }
+}
+
 
 async function setupInventoryClicks() {
     try {
