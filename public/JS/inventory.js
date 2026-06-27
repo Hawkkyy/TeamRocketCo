@@ -87,3 +87,51 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+//new code
+// 1. Keep track of what operation the user currently selected
+let selectedOrderType = "BUY"; 
+
+// 2. Attach event listeners to your UI buttons (Buy, Sell, Trade) to switch modes
+document.getElementById("btn-buy").addEventListener("click", () => {
+    selectedOrderType = "BUY";
+    // Optional: Add a class to highlight the active button
+});
+
+document.getElementById("btn-sell").addEventListener("click", () => {
+    selectedOrderType = "SELL";
+});
+
+document.getElementById("btn-trade").addEventListener("click", () => {
+    selectedOrderType = "TRADE";
+});
+
+// 3. Update your existing Confirm Button handler to use selectedOrderType
+document.getElementById("confirm-order-btn").addEventListener("click", async () => {
+    const orderQty = document.getElementById("modal-qty-input").value;
+    const finalCalculatedPrice = parseFloat(document.getElementById("modal-total-price").innerText.replace('₱', ''));
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: 1, // Replace with dynamic logged-in user ID later
+                cardId: cardData.card_id, // Ensure cardData is captured from the item click
+                qty: parseInt(orderQty),
+                orderType: selectedOrderType, // <--- NOW DYNAMIC (BUY, SELL, or TRADE)
+                totalPrice: selectedOrderType === "TRADE" ? 0.00 : finalCalculatedPrice // Trades can be 0 or NULL total
+            })
+        });
+
+        if (response.ok) {
+            alert(`Order (${selectedOrderType}) confirmed and recorded!`);
+            location.reload(); // Refresh to show the updated stock amount on page
+        } else {
+            const errText = await response.text();
+            alert("Order failed: " + errText);
+        }
+    } catch (error) {
+        console.error("Error submitting order transaction:", error);
+    }
+});

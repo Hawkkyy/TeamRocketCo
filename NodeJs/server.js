@@ -337,3 +337,66 @@ app.post("/process-order", async (req, res) => {
     connection.release();
   }
 });
+
+
+// ... Your existing backend route setup (app.post('/order', ...))
+try {
+    await connection.beginTransaction();
+
+    // 1. Check existing inventory stock allocation
+    const [stockRows] = await connection.query(
+      "SELECT stock_qty FROM tbl_cards WHERE card_id = ?", 
+      [cardId]
+    );
+
+    if (stockRows.length === 0) {
+        throw new Error("Card ID target structural log entry not found.");
+    }
+
+    const dbStock = stockRows[0].stock_qty;
+    let updatedStock = dbStock;
+
+    // 2. Calculate new stock based on the transaction type mapping context
+    if (orderType === "BUY") {
+        updatedStock = dbStock - qty; // Customer buys -> Shop loses stock
+        if (updatedStock < 0) {
+            throw new Error("Insufficient store stock available for purchase.");
+        }
+    } else if (orderType === "SELL") {
+        updatedStock = dbStock + qty; // Customer sells -> Shop gains stock
+    } else if (orderType === "TRADE") {
+        // Define your custom rule for trade. 
+        // If it's a 1-to-1 switch, stock might stay unchanged, or adjust accordingly:
+        updatedStock = dbStock; 
+    } else {
+        throw new Error("Invalid transaction type processed.");
+    }
+
+    // 3. Update stock_qty inside tbl_cards table
+    await connection.query(
+      "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
+      [updatedStock, cardId]
+    );
+
+    // 4. Save main transaction details inside tbl_transactions table
+    const [txResult] = await connection.query(
+      "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
+      [userId, orderType, totalPrice]
+    );
+    const newTransactionId = txResult.insertId;
+
+    // 5. Save items mapping metrics inside tbl_transaction_items table
+    await connection.query(
+      "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
+      [newTransactionId, cardId, qty, totalPrice]
+    );
+
+    // Commit cleanly to avoid rollbacks
+    await connection.commit();
+    res.status(200).send(`Transaction (${orderType}) saved successfully!`);
+
+} catch (err) {
+    await connection.rollback();
+    console.error("Database transaction rolled back due to error execution context:", err);
+    res.status(400).send(err.message);
+}
