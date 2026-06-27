@@ -116,6 +116,32 @@ app.get("/inventory", async (req, res) => {
   }
 });
 
+// admin pages
+
+//cust-order
+//inv-prices
+app.get('/inventoryprices', async (req, res) => {
+  const query =`
+    SELECT 
+        p.poke_name, 
+        c.condition_id, 
+        c.variant_id, 
+        c.final_price
+      FROM tbl_cards c
+      JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+      JOIN tbl_conditions o ON c.condition_id = c.condition_id
+      JOIN tbl_variants v ON c.variant_id = v.variant_id;
+    `
+    const [cards] = await db.execute(query);
+    res.json(cards); 
+});
+
+//data-man
+//add
+//edit
+//insert a new card
+//
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
