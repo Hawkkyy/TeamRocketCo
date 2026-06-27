@@ -116,11 +116,11 @@ main {
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(255,0,0,0.15);
     
-    /* Flex alignment perfectly centers the inner elements vertically */
+    /* Changed to standard block flow so text reads naturally */
     display: flex;
     flex-direction: column;
-    align-items: center; 
-    text-align: center;
+    align-items: stretch; 
+    text-align: left; 
 }
 
 main p {
@@ -129,9 +129,10 @@ main p {
 }
 
 main ul {
-    margin: 15px 0 15px 30px;
+    margin: 15px 0;
+    padding-left: 25px;
+    list-style-position: outside;
 }
-
 main li {
     margin-bottom: 8px;
 }
