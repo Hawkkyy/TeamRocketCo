@@ -211,14 +211,14 @@ app.get("/download-pdf", async (req, res) => {
 
     // 4. Launch Puppeteer with the fixed security flags
     browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox", 
-        "--disable-setuid-sandbox",
-        "--allow-file-access-from-files",
-        "--disable-web-security"
-      ]
-    });
+  headless: "new",
+  args: [
+    "--no-sandbox", 
+    "--disable-setuid-sandbox",
+    "--allow-file-access-from-files",
+    "--disable-web-security"
+  ]
+});
     
     const page = await browser.newPage();
 
