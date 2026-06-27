@@ -66,7 +66,6 @@ header img {
             rgba(0,0,0,0.65)
         ),
         url("Hero.png");
-
     background-size: cover;
     background-position: center;
     position: relative;
@@ -116,6 +115,12 @@ main {
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(255,0,0,0.15);
+    
+    /* Flex alignment perfectly centers the inner elements vertically */
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
 }
 
 main p {
@@ -140,6 +145,19 @@ main a:hover {
     color: #ff4040;
 }
 
+main h1, main h2 {
+    margin: 20px 0;
+    width: 100%;
+    text-align: center;
+}
+
+main > img {
+    display: block;
+    max-width: 250px;
+    height: auto !important;
+    margin: 0 auto;
+}
+
 
 
 table {
@@ -162,8 +180,6 @@ tr:nth-child(even) {
 tr:hover {
     background: rgba(212,0,0,0.15);
 }
-
-
 
 table img {
     width: 120px !important;
