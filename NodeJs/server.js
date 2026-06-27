@@ -4,8 +4,11 @@ require("dotenv").config({ path: "./server.env" });
 const express = require("express");
 const mysql = require("mysql2");
 
+
+
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 2. Create the connection pool
 const pool = mysql.createPool({
