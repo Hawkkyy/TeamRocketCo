@@ -6,6 +6,7 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const puppeteer = require("puppeteer");
 
 const app = express();
 app.use(cors({
@@ -147,7 +148,47 @@ app.get('/inventoryprices', async (req, res) => {
 //edit
 //insert a new card
 //
+app.get("/download-pdf", async (req, res) => {
+  let browser;
+  try {
+    // 1. Launch with flags required for cloud platforms like Render
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+    
+    const page = await browser.newPage();
 
+    // 2. Point it to your live inventory page
+    // Note: 'networkidle0' tells Puppeteer to wait until your database API fetch is totally done loading rows
+    await page.goto("https://teamrocketco.onrender.com/inv-prices.html", {
+      waitUntil: "networkidle0"
+    });
+
+    // 3. Generate the PDF into a binary stream (Buffer) instead of saving to disk
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true, // Crucial to keep your dark theme colors!
+      margin: { top: "15mm", bottom: "15mm", left: "15mm", right: "15mm" }
+    });
+
+    // 4. Wrap the process and close the browser instance
+    await browser.close();
+
+    // 5. Send the file downstream to the user's browser as an immediate download attachment
+    res.contentType("application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=inventory-report.pdf");
+    res.send(pdfBuffer);
+
+  } catch (err) {
+    console.error("Puppeteer PDF generation failed:", err);
+    
+    // Safely kill the browser process if it crashed mid-run to save RAM
+    if (browser) await browser.close();
+    
+    res.status(500).send("Failed to compile document ledger.");
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
