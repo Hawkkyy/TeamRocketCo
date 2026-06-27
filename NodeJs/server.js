@@ -244,28 +244,27 @@ app.listen(3000, () => {
 
 
 //I HATE MY LIFE AND I WANNA DIE
-// PASTE THIS AT THE BOTTOM OF NODEJS.TXT (RIGHT BEFORE APP.LISTEN)
 // =========================================================================
-// TRANSACTION ENGINE ENDPOINT - PASTE AT THE BOTTOM OF NODEJS.TXT
+// MARIELE'S TRANSACTION ENGINE ENDPOINT - PASTE AT THE BOTTOM OF NODEJS.TXT
 // =========================================================================
 app.post("/process-order", async (req, res) => {
   const { cardId, action, qty } = req.body;
   
-  // Uses user_id = 1 as a fallback default placeholder value for testing
+  // Uses user_id = 1 as a default placeholder value if a session isn't passed
   const userId = req.body.userId || 1; 
 
   if (!cardId || !action || !qty || qty <= 0) {
     return res.status(400).send("Invalid input parameters provided.");
   }
 
-  // Format incoming action string to match ENUM('Buy','Sell','Trade') exactly
+  // Format incoming action string to match ENUM('Buy','Sell','Trade') casing exactly
   const orderType = action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
 
-  // Establish a connection client from your pool to handle safe SQL transactions
+  // Establish a connection from your existing pool to handle safe SQL transactions
   const connection = await pool.getConnection();
 
   try {
-    // Start Transaction tracking
+    // Start tracking queries safely
     await connection.beginTransaction();
 
     // 1. Fetch current information for the card by joining tbl_cards with tbl_pokemons
@@ -282,7 +281,7 @@ app.post("/process-order", async (req, res) => {
     const cardRecord = cards[0];
     const currentStock = cardRecord.stock_qty;
     
-    // Choose accurate pricing metric variables
+    // Choose accurate pricing metric variables from data dictionary attributes
     const pricePerUnit = parseFloat(cardRecord.final_price) || parseFloat(cardRecord.base_price || 0);
     const totalPrice = pricePerUnit * qty;
     
