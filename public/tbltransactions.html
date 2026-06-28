@@ -47,7 +47,7 @@
                     </button>
                 </div>
 
-                <div id="cards" class="inventory-container"> Please wait for the database to load! </div>
+                <div id="orders" class="inventory-container"> Please wait for the database to load! </div>
             </main>
          </div>
         <footer>
@@ -74,9 +74,9 @@
             async function displayCards() {
                 try {
                     const response = await fetch('https://teamrocketco.onrender.com/orders');
-                    const cards = await response.json();
+                    const orders = await response.json();
 
-                    const shopContainer = document.getElementById('cards');
+                    const shopContainer = document.getElementById('orders');
                     shopContainer.innerHTML = `
                                     <table>
                                         <tr>
@@ -87,7 +87,7 @@
                                             <th>Order Total</th>
                                         </tr>
                                     </table>`;
-                    cards.forEach(order => {
+                    orders.forEach(order => {
                         const cardHTML = `
                             <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
                                 <table>

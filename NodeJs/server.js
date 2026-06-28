@@ -159,7 +159,7 @@ app.get('/orders', async (req, res) => {
     res.json(orders); 
   } catch (err) {
     console.error("Inventory data query error:", err);
-    res.status(500).json({ error: "Failed to retrieve inventory data" });
+    res.status(500).json({ error: "Failed to retrieve transaction data" });
   }
 });
 
