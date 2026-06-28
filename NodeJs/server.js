@@ -158,8 +158,28 @@ app.get('/orders', async (req, res) => {
     const [orders] = await db.query(query); 
     res.json(orders); 
   } catch (err) {
-    console.error("Inventory data query error:", err);
+    console.error("ORders data query error:", err);
     res.status(500).json({ error: "Failed to retrieve transaction data" });
+  }
+});
+
+app.get('/userlist', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        u.user_id,
+        u.username,
+        CONCAT(firstname, ' ', lastname) AS full_name,
+        u.contact_no,
+        u.area_code,
+        u.role 
+      FROM tbl_users u
+    `;
+    const [users] = await db.query(query); 
+    res.json(orders); 
+  } catch (err) {
+    console.error("Users data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve user data" });
   }
 });
 

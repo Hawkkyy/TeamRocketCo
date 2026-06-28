@@ -112,28 +112,26 @@
                                             <th>Variant</th>
                                             <th>Price</th>
                                             <th>Stock Qty.</th>
+                                        </tr> ;
+                                    <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">`
+                        cards.forEach(card => {
+                            const cardHTML = `
+                                        <tr>
+                                            <td> ${card.card_id} </td>
+                                            <td> ${card.poke_name} </td>
+                                            <td> ${card.condition_id} </td>
+                                            <td> ${card.variant_id} </td>
+                                            <td> ${Number(card.final_price).toFixed(2)} </td>
+                                            <td> ${card.stock_qty} </td>
                                         </tr>
-                                    </table>`;
-                    cards.forEach(card => {
-                        const cardHTML = `
-                            <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                                <table>
-                                    <tr>
-                                        <td> ${card.card_id} </td>
-                                        <td> ${card.poke_name} </td>
-                                        <td> ${card.condition_id} </td>
-                                        <td> ${card.variant_id} </td>
-                                        <td> ${Number(card.final_price).toFixed(2)} </td>
-                                        <td> ${card.stock_qty} </td>
-                                    </tr>
-                                </table>
-                                    <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                        Delete Card
-                                    </button>
-                                </div>`;
-                        shopContainer.innerHTML += cardHTML;
-                    });
 
+                                        <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                            Delete Card
+                                        </button>`;
+                            shopContainer.innerHTML += cardHTML;
+                    });
+                        shopContainer.innerHTML += `</table>
+                                                    </div>`
                 } catch (error) {
                     document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
                     console.error(error);
