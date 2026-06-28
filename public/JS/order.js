@@ -92,12 +92,7 @@ function bindOrderFormSubmission(cardData) {
             const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
             const totalPrice = cardData.base_price * quantity;
             
-            const userId = localStorage.getItem("userId");
-                if(!userId){
-                    alert("Please log in first.");
-                    window.location.href="login.html";
-                    return;
-                }
+            const userId = 2;
 
             const orderPayload = {
                 userId: parseInt(userId),
