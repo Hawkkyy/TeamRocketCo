@@ -421,6 +421,27 @@ app.get("/adminsection/a-dashboard.html", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../public/a-dashboard.html"));
 });
 
+app.put('/update-user/:id', (req, res) => {
+    const userId = req.params.id;
+    const { username, full_name, contact_no, city } = req.body;
+
+    const sqlQuery = `
+        UPDATE tblusers 
+        SET username = ?, full_name = ?, contact_no = ?, city = ?, updated_at = NOW() 
+        WHERE user_id = ?
+    `;
+
+    const values = [username, full_name, contact_no, city, userId];
+
+    db.query(sqlQuery, values, (error, results) => {
+        if (error) {
+            console.error("Database UPDATE error:", error);
+            return res.status(500).json({ error: "Failed to update record in database." });
+        }
+        
+        res.status(200).json({ message: "User successfully updated!" });
+    });
+});
 
 // 7. WEB TRAFFIC BOUNDS
 app.listen(3000, () => {
