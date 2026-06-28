@@ -59,8 +59,7 @@ app.post("/register", async (req, res) => {
     const defaultRole = "user";
 
     await db.query(sql, [user, fname, lname, cont, area, hashedPassword, defaultRole]);
-    res.send("Account successfully created!");
-  } catch (err) {
+    res.send("<script>alert('Account successfully created!'); window.location.href='/login.html';</script>");  } catch (err) {
     console.error(err); 
     res.status(500).json({ 
       error: "Failed to create user", 
