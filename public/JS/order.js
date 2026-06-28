@@ -95,9 +95,9 @@ function bindOrderFormSubmission(cardData) {
             const userId = 2;
 
             const orderPayload = {
-                userId: parseInt(userId),
+                userId: userId,
                 cardId: parseInt(cardData.card_id),
-                orderType: activeAction, // Reads directly from select input dropdown element state
+                orderType: activeAction,
                 qty: quantity,
                 totalPrice: totalPrice
             };
