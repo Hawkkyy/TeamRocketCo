@@ -1,6 +1,6 @@
 const BACKEND_URL = "https://teamrocketco.onrender.com";
 const modal = document.getElementById("cardModal");
-const openBtn = document.ghttps://teamrocketco.onrender.cometElementById("openModalBtn");
+const openBtn = document.getElementById("openModalBtn");
 const closeBtn = document.getElementById("closeModalBtn");
 
 // 1. Open Modal popup
