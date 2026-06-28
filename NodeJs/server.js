@@ -202,6 +202,41 @@ app.get('/userlist', async (req, res) => {
   }
 });
 
+// PUT: Update an existing user's profile details
+app.put('/update-user/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { username, full_name, contact_no, city } = req.body;
+
+    // Validate that basic details were sent
+    if (!username || !full_name) {
+      return res.status(400).json({ error: "Username and Full Name are required fields." });
+    }
+
+    // Split Full Name back into firstname and lastname for your tbl_users schema structure
+    const nameParts = full_name.trim().split(" ");
+    const firstname = nameParts[0];
+    const lastname = nameParts.slice(1).join(" ") || ""; // Fallback if no last name provided
+
+    // Update query targeting the correct 'tbl_users' table layout
+    const sql = `
+      UPDATE tbl_users 
+      SET username = ?, firstname = ?, lastname = ?, contact_no = ?, updated_at = NOW() 
+      WHERE user_id = ?
+    `;
+
+    const [result] = await db.query(sql, [username, firstname, lastname, contact_no, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User profile record not found." });
+    }
+
+    res.json({ message: "User profile updated successfully!" });
+  } catch (err) {
+    console.error("Failed to update user profile records:", err);
+    res.status(500).json({ error: "Database transaction failed", details: err.message });
+  }
+});
 
  //     LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
 //LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
