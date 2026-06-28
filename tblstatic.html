@@ -35,9 +35,8 @@
             </div>
 
             <main style="width: 100%; overflow-y: auto; padding: 20px;">
-                <h1 style="text-align: left"> Dashboard - Inventory </h1>
+                <h1 style="text-align: left"> Dashboard - Reference Tables </h1>
                 <br>
-                
                 <div style="margin-bottom: 20px; display: flex; gap: 10px;">
                     <button onclick="window.location.href='/download-pdf'" style="padding: 10px 20px; background-color: #ef5350; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                         Download PDF Report
@@ -47,7 +46,8 @@
                     </button>
                 </div>
 
-                <div id="cards" class="inventory-container"> Please wait for the database to load! </div>
+                <div id="locations" class="inventory-container"> Please wait for the database to load! </div>
+                <button onclick="displaylocation()">View Locations Table</button>
             </main>
          </div>
         <footer>
@@ -97,50 +97,43 @@
         </div>
 
         <script>
-            async function displayCards() {
+            async function displaylocation() {
                 try {
-                    const response = await fetch('https://teamrocketco.onrender.com/inventoryprices');
-                    const cards = await response.json();
+                    const response = await fetch('https://teamrocketco.onrender.com/location');
+                    const locs = await response.json();
 
-                    const shopContainer = document.getElementById('cards');
-                    shopContainer.innerHTML = `
+                    const shopContainer = document.getElementById('locations');
+                    let htmlContent =`
+                                <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
                                     <table>
                                         <tr>
-                                            <th>Card ID</th>
-                                            <th>Pokemon Name</th>
-                                            <th>Condition</th>
-                                            <th>Variant</th>
-                                            <th>Price</th>
-                                            <th>Stock Qty.</th>
+                                            <th>Area Code</th>
+                                            <th>City</th>
+                                            <th>Action</th>
                                         </tr>
-                                    </table>`;
-                    cards.forEach(card => {
-                        const cardHTML = `
-                            <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                                <table>
-                                    <tr>
-                                        <td> ${card.card_id} </td>
-                                        <td> ${card.poke_name} </td>
-                                        <td> ${card.condition_id} </td>
-                                        <td> ${card.variant_id} </td>
-                                        <td> ${Number(card.final_price).toFixed(2)} </td>
-                                        <td> ${card.stock_qty} </td>
-                                    </tr>
-                                </table>
-                                    <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                        Delete Card
-                                    </button>
-                                </div>`;
-                        shopContainer.innerHTML += cardHTML;
-                    });
-
+                                        `
+                        locs.forEach(loc => {
+                            htmlContent += `
+                                        <tr>
+                                            <td> ${loc.area_code} </td>
+                                            <td> ${loc.city} </td>
+                                            <td><button onclick="deleteCard(${loc.area_code})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                            Delete Card
+                                            </button> </td>
+                                        </tr>
+                                        `;
+                            });
+                            htmlContent += `
+                                        </table>
+                                    </div>
+                                `;
+                            shopContainer.innerHTML = htmlContent;
                 } catch (error) {
-                    document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    document.getElementById('locations').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
                     console.error(error);
                 }
             }
-            displayCards();
         </script>
-        <script src="JS/inv-prices.js" defer></script>
+        <script src="JS/inv-prices.js" defer></script> 
     </body>
 </html>
