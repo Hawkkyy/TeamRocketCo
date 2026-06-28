@@ -179,6 +179,7 @@ app.get('/userlist', async (req, res) => {
         l.city,
         u.role,
         u.created_at,
+        u.updated_at
       FROM tbl_users u
       LEFT JOIN tbl_location l ON u.area_code = l.area_code
     `;
