@@ -397,8 +397,7 @@ app.get("/download-pdf", async (req, res) => {
     const pdfHtmlContent = `<!DOCTYPE html><html><body><h1>Inventory Report</h1><table border="1">${tableRows}</table></body></html>`;
     browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
-    await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+  await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
     res.contentType("application/pdf");
     res.send(pdfBuffer);
@@ -438,7 +437,7 @@ app.get("/download-orders-pdf", async (req, res) => {
 
     browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
-    await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
+    await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });
     const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
