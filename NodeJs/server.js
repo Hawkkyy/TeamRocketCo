@@ -426,7 +426,7 @@ app.put('/update-user/:id', (req, res) => {
     const { username, full_name, contact_no, city } = req.body;
 
     const sqlQuery = `
-        UPDATE tblusers 
+        UPDATE tbl_users 
         SET username = ?, full_name = ?, contact_no = ?, city = ?, updated_at = NOW() 
         WHERE user_id = ?
     `;
