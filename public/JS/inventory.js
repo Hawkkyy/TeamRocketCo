@@ -62,39 +62,6 @@ async function setupInventoryClicks() {
     }
 }
 
-window.onload = setupInventoryClicks;
+window.onload = setupInventoryClicks; 
 
 
-// ADD TO THE BOTTOM OF INVENTORY.JS
-// This attaches an Order Button click redirect handler directly to your project's active modal structure
-
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("details-modal");
-    if (modal) {
-        const orderBtn = document.createElement("button");
-        orderBtn.innerText = "Proceed to Buy / Sell / Trade";
-        orderBtn.style.cssText = "margin-top: 15px; width: 20%; padding: 12px; background: #d40000; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-family: 'Mulish', sans-serif;";
-        
-        const infoBlock = modal.querySelector(".modal-info") || modal;
-        infoBlock.appendChild(orderBtn);
-
-        orderBtn.addEventListener("click", () => {
-            const currentName = document.getElementById("modal-name")?.innerText?.toLowerCase();
-            if (currentName) {
-                fetch(`${BACKEND_URL}/inventory`)
-                    .then(res => res.json())
-                    .then(inventory => {
-                        const found = inventory.find(i => i.poke_name.toLowerCase() === currentName);
-                        if (found) {
-                            window.location.href = `order.html?cardId=${found.card_id}`;
-                        } else {
-                            alert("Card matching error. Could not redirect.");
-                        }
-                    })
-                    .catch(err => console.error("Error matching modal to card_id:", err));
-            } else {
-                alert("Please click and select a card first!");
-            }
-        });
-    }
-});
