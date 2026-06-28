@@ -176,9 +176,10 @@ app.get("/download-pdf", async (req, res) => {
       </html>
     `;
 
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
+    // Locate this inside your app.get("/download-pdf") route
+     browser = await puppeteer.launch({
+        headless: "new",
+        args: [
         "--no-sandbox", 
         "--disable-setuid-sandbox",
         "--allow-file-access-from-files",
