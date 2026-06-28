@@ -1,102 +1,67 @@
-const BACKEND_URL = "http://localhost:3000";
-
+const BACKEND_URL = "https://teamrocketco.onrender.com";
 const modal = document.getElementById("cardModal");
-const openBtn = document.getElementById("openModalBtn");
+const openBtn = document.ghttps://teamrocketco.onrender.cometElementById("openModalBtn");
 const closeBtn = document.getElementById("closeModalBtn");
-const BACKEND_URL = "http://localhost:3000";
 
-// 1. Open Modal (Change display style to absolute flex container layout)
-openBtn.addEventListener("click", () => {
-  modal.style.display = "flex";
-});
+// 1. Open Modal popup
+if (openBtn) {
+  openBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+}
 
-// 2. Close Modal when clicking the (X)
-closeBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-});
+// 2. Close Modal using the (X) button
+if (closeBtn) {
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+}
 
-// 3. Close Modal if the user clicks anywhere outside of the form box
+// 3. Close Modal if the user clicks anywhere outside of the form card
 window.addEventListener("click", (e) => {
   if (e.target === modal) {
     modal.style.display = "none";
   }
 });
 
-// 4. Handle Form Submission to Express Backend API
-document.getElementById("addCardForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+// 4. Handle Form Submission to insert a new card record
+const addForm = document.getElementById("addCardForm");
+if (addForm) {
+  addForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const cardData = {
-    poke_id: parseInt(document.getElementById("pokeId").value),
-    condition_id: document.getElementById("conditionId").value,
-    variant_id: document.getElementById("variantId").value,
-    stock_qty: parseInt(document.getElementById("stockQty").value),
-    final_price: parseFloat(document.getElementById("finalPrice").value)
-  };
+    const cardData = {
+      poke_id: parseInt(document.getElementById("pokeId").value),
+      condition_id: document.getElementById("conditionId").value,
+      variant_id: document.getElementById("variantId").value,
+      stock_qty: parseInt(document.getElementById("stockQty").value),
+      final_price: parseFloat(document.getElementById("finalPrice").value)
+    };
 
-  try {
-    const response = await fetch(`${BACKEND_URL}/inventory/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cardData)
-    });
+    try {
+      const response = await fetch(`${BACKEND_URL}/inventory/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cardData)
+      });
 
-    const data = await response.json();
-    if (response.ok) {
-      alert(data.message);
-      modal.style.display = "none"; // Hide popup modal window framework
-      location.reload();            // Dynamic grid inventory display refresh
-    } else {
-      alert("Error: " + data.error);
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        modal.style.display = "none"; 
+        addForm.reset();
+        if (typeof displayCards === "function") displayCards(); // Reload view grid dynamically
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (err) {
+      console.error("Network communication error:", err);
+      alert("Failed to communicate with inventory cluster.");
     }
-  } catch (err) {
-    console.error("Network communication error:", err);
-    alert("Failed to reach live target API server connection.");
-  }
-});
+  });
+}
 
-
-
-
-
-
-
-
-
-
-// Handle Add Card Form Submit Action Linkages
-document.getElementById("addCardForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const cardData = {
-    poke_id: parseInt(document.getElementById("pokeId").value),
-    condition_id: document.getElementById("conditionId").value,
-    variant_id: document.getElementById("variantId").value,
-    stock_qty: parseInt(document.getElementById("stockQty").value),
-    final_price: parseFloat(document.getElementById("finalPrice").value)
-  };
-
-  try {
-    const response = await fetch(`${BACKEND_URL}/inventory/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cardData)
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      alert(data.message);
-      location.reload(); // Reload dashboard view grid dynamically
-    } else {
-      alert("Error: " + data.error);
-    }
-  } catch (err) {
-    console.error("Add operation network error:", err);
-    alert("Failed to communicate with inventory cluster.");
-  }
-});
-
-// Handle Delete Card Row Verification Operations
+// 5. Handle Delete Card operations
 async function deleteCard(cardId) {
   if (!cardId) return alert("Cannot complete deletion: Missing tracking ID");
   
@@ -109,7 +74,7 @@ async function deleteCard(cardId) {
       const data = await response.json();
       if (response.ok) {
         alert(data.message);
-        location.reload(); // Drop target row item instantly from active array UI
+        if (typeof displayCards === "function") displayCards(); // Refresh display grid instantly
       } else {
         alert("Error: " + data.error);
       }
@@ -119,4 +84,3 @@ async function deleteCard(cardId) {
     }
   }
 }
-
