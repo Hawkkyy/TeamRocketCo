@@ -37,7 +37,18 @@
   
                     Contact No.: <input type="text" name="cont" pattern="[0-9]+" title="Numbers only." required><br>
   
-                    Area Code: <input type="number" name="area" required>  <br>
+                    Area Code: <select name="area" required>
+                                    <option value="" disabled selected>Select an area code:</option>
+                                    <option value="212">11 (Sapporro)</option>
+                                    <option value="310">3 (Tokyo)</option>
+                                    <option value="312">52 (Nagoya)</option>
+                                    <option value="415">6 (Osaka)</option>
+                                    <option value="212">75 (Kyoto)</option>
+                                    <option value="310">78 (Kobe)</option>
+                                    <option value="312">82 (Hiroshima)</option>
+                                    <option value="415">92 (Fukuoka)</option>
+                                    <option value="415">95 (Yokohama)</option>
+                                </select> <br>
   
                     Password: <input type="password" name="pass" required>   <br>
   
