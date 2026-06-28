@@ -21,7 +21,6 @@
                     <li><a class="navi" href="services.html">Services</a></li>
                     <li><a class="navi" href="contact-us.html">Contact Us</a></li>
                     <li><a class="navi"  href="login.html">Logout</a></li>
-                    
                 </ul>
             </nav>
         </header>
@@ -95,121 +94,150 @@
           </div>
         </div>
 
+        <div id="editUserModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+          <div style="background-color: #1a1924; padding: 30px; border-radius: 8px; width: 400px; border: 1px solid #333; position: relative;">
+            <span id="closeEditModalBtn" onclick="document.getElementById('editUserModal').style.display='none'" style="position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="color: #0288d1; margin-top: 0; margin-bottom: 20px;">Edit User Profile</h3>
+            
+            <form id="editUserForm" style="display: flex; flex-direction: column; gap: 15px;">
+              <input type="hidden" id="editUserId">
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Username</label>
+                <input type="text" id="editUsername" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Full Name</label>
+                <input type="text" id="editFullName" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Contact No.</label>
+                <input type="text" id="editContactNo" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Location (City)</label>
+                <input type="text" id="editCity" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <button type="submit" style="background-color: #0288d1; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                Update Changes
+              </button>
+            </form>
+          </div>
+        </div>
+
         <script>
-    // Global variable to store loaded data safely
-    let cachedUsers = []; 
+            // Global variable to store loaded data safely
+            let cachedUsers = []; 
 
-    async function displayCards() {
-        try {
-            const response = await fetch('https://teamrocketco.onrender.com/userlist');
-            const users = await response.json();
-            cachedUsers = users; // Store data here
+            async function displayCards() {
+                try {
+                    const response = await fetch('https://teamrocketco.onrender.com/userlist');
+                    const users = await response.json();
+                    cachedUsers = users; // Store data here
 
-            const shopContainer = document.getElementById('users');
-            let htmlContent = `
-                <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                    <table>
-                        <tr>
-                            <th>User ID</th>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Contact No.</th>
-                            <th>Area Code</th>
-                            <th>Location</th>
-                            <th>Role</th>
-                            <th>Account Creation</th>
-                            <th>Account Edited</th>
-                            <th>Action</th>
-                        </tr>
-            `;
+                    const shopContainer = document.getElementById('users');
+                    let htmlContent = `
+                        <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+                            <table>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Contact No.</th>
+                                    <th>Area Code</th>
+                                    <th>Location</th>
+                                    <th>Role</th>
+                                    <th>Account Creation</th>
+                                    <th>Account Edited</th>
+                                    <th>Action</th>
+                                </tr>
+                    `;
 
-            users.forEach(user => {
-                htmlContent += `
-                    <tr>
-                        <td> ${user.user_id} </td>
-                        <td> ${user.username} </td>
-                        <td> ${user.full_name} </td>
-                        <td> ${user.contact_no} </td>
-                        <td> ${user.area_code} </td>
-                        <td> ${user.city} </td>
-                        <td> ${user.role} </td>
-                        <td> ${user.created_at} </td>
-                        <td> ${user.updated_at} </td>
-                        <td>
-                            <button onclick="openEditModal(${user.user_id})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-right: 5px;">
-                                Edit
-                            </button> 
-                            
-                            <button onclick="deleteCard(${user.user_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                Delete Card
-                            </button> 
-                        </td>
-                    </tr>
-                `;
-            });
+                    users.forEach(user => {
+                        htmlContent += `
+                            <tr>
+                                <td> ${user.user_id} </td>
+                                <td> ${user.username} </td>
+                                <td> ${user.full_name} </td>
+                                <td> ${user.contact_no} </td>
+                                <td> ${user.area_code} </td>
+                                <td> ${user.city} </td>
+                                <td> ${user.role} </td>
+                                <td> ${user.created_at} </td>
+                                <td> ${user.updated_at} </td>
+                                <td>
+                                    <button onclick="openEditModal(${user.user_id})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-right: 5px;">
+                                        Edit
+                                    </button> 
+                                    <button onclick="deleteCard(${user.user_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                        Delete Card
+                                    </button> 
+                                </td>
+                            </tr>
+                        `;
+                    });
 
-            htmlContent += `
-                    </table>
-                </div>
-            `;
-            shopContainer.innerHTML = htmlContent;
-        } catch (error) {
-            console.error("Execution error:", error);
-            const errorContainer = document.getElementById('users');
-            if (errorContainer) {
-                errorContainer.innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    htmlContent += `
+                            </table>
+                        </div>
+                    `;
+                    shopContainer.innerHTML = htmlContent;
+                } catch (error) {
+                    console.error("Execution error:", error);
+                    const errorContainer = document.getElementById('users');
+                    if (errorContainer) {
+                        errorContainer.innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    }
+                }
             }
-        }
-    }
 
-    // Modal data pre-fill handler
-    function openEditModal(userId) {
-        const user = cachedUsers.find(u => u.user_id === userId);
-        if (!user) return;
-        
-        document.getElementById('editUserId').value = user.user_id;
-        document.getElementById('editUsername').value = user.username;
-        document.getElementById('editFullName').value = user.full_name;
-        document.getElementById('editContactNo').value = user.contact_no;
-        document.getElementById('editCity').value = user.city;
-        
-        document.getElementById('editUserModal').style.display = 'flex';
-    }
+            // Modal data pre-fill handler
+            function openEditModal(userId) {
+                const user = cachedUsers.find(u => u.user_id === userId);
+                if (!user) return;
+                
+                document.getElementById('editUserId').value = user.user_id;
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editFullName').value = user.full_name;
+                document.getElementById('editContactNo').value = user.contact_no;
+                document.getElementById('editCity').value = user.city;
+                
+                document.getElementById('editUserModal').style.display = 'flex';
+            }
 
-    // Modal submit handler
-    document.getElementById('editUserForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const userId = document.getElementById('editUserId').value;
-        const updatedData = {
-            username: document.getElementById('editUsername').value,
-            full_name: document.getElementById('editFullName').value,
-            contact_no: document.getElementById('editContactNo').value,
-            city: document.getElementById('editCity').value
-        };
+            // Modal submit handler
+            document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userId = document.getElementById('editUserId').value;
+                const updatedData = {
+                    username: document.getElementById('editUsername').value,
+                    full_name: document.getElementById('editFullName').value,
+                    contact_no: document.getElementById('editContactNo').value,
+                    city: document.getElementById('editCity').value
+                };
 
-        try {
-            const response = await fetch(`https://teamrocketco.onrender.com/update-user/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData)
+                try {
+                    const response = await fetch(`https://teamrocketco.onrender.com/update-user/${userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    if (response.ok) {
+                        alert('User profile updated successfully!');
+                        document.getElementById('editUserModal').style.display = 'none';
+                        displayCards();
+                    } else {
+                        alert('Failed to save updates to database.');
+                    }
+                } catch (err) {
+                    console.error("Error updating user:", err);
+                }
             });
 
-            if (response.ok) {
-                alert('User profile updated successfully!');
-                document.getElementById('editUserModal').style.display = 'none';
+            document.addEventListener('DOMContentLoaded', () => {
                 displayCards();
-            } else {
-                alert('Failed to save updates to database.');
-            }
-        } catch (err) {
-            console.error("Error updating user:", err);
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        displayCards();
-    });
-</script>
+            });
+        </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>
 </html>
