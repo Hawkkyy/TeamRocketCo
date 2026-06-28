@@ -27,7 +27,6 @@ app.use(cors({
     preflightContinue: false,   // Automatically handles and stops the OPTIONS request here
     optionsSuccessStatus: 204   // Answers browser preflights with a 204 No Content status
 }));
-app.options('(.*)', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
