@@ -279,6 +279,24 @@ app.post("/transaction", async (req, res) => {
     }
 });
 
+app.get('/location', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        l.area_code,
+        l.city
+      FROM tbl_location l
+    `;
+    const [users] = await db.query(query); 
+    res.json(users); 
+  } catch (err) {
+    console.error("Users data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve lopcation data" });
+  }
+});
+
+
+
 app.get("/adminsection/inv-prices.html", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../public/inv-prices.html"));
 });
