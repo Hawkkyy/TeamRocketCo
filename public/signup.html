@@ -30,12 +30,12 @@
             <div class="login">
                 <form name="signUpForm" action="https://teamrocketco.onrender.com/register" onsubmit="return validateForm()" method="POST">
 
-                    Username: <input type="text" name="user" required> <br>
+                    Username: <input type="text" name="user" maxlength="50" required> <br>
   
-                    First Name: <input type="text" name="fname" pattern="[A-Za-z ]+" title="Letters only." required> <br>
-                    Last Name: <input type="text" name="lname" pattern="[A-Za-z ]+" title="Letters only." required>  <br>
+                    First Name: <input type="text" name="fname" pattern="[A-Za-z ]+" title="Letters only." maxlength="50" required> <br>
+                    Last Name: <input type="text" name="lname" pattern="[A-Za-z ]+" title="Letters only." maxlength="50" required>  <br>
   
-                    Contact No.: <input type="text" name="cont" pattern="[0-9]+" title="Numbers only." required><br>
+                    Contact No.: <input type="text" name="cont" pattern="[0-9]+" title="Numbers only." maxlength="20" required><br>
   
                     Area Code: <select name="area" required>
                                     <option value="" disabled selected>Select an area code:</option>
@@ -50,7 +50,7 @@
                                     <option value="95">95 (Yokohama)</option>
                                 </select> <br>
   
-                    Password: <input type="password" name="pass" minlength="8" maxlength="15" required>   <br>
+                    Password: <input type="password" name="pass"  maxlength="15" required>   <br>
   
                                 <input type="submit" value="Submit">
                                 
