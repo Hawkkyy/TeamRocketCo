@@ -68,9 +68,6 @@ window.onload = setupInventoryClicks;
 // ADD TO THE BOTTOM OF INVENTORY.JS
 // This attaches an Order Button click redirect handler directly to your project's active modal structure
 
-// =========================================================================
-// DYNAMIC MODAL REDIRECT HOOK - PASTE AT THE BOTTOM OF INVENTORY.JS
-// =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("details-modal");
     if (modal) {
