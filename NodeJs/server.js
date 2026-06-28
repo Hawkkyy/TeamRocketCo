@@ -371,11 +371,8 @@ app.put('/update-user/:id', async (req, res) => {
   }
 });
 
-// ==========================================
-// 8. FILE REPORTING ENDPOINTS
-// ==========================================
 
-// ROUTE A: This is for CARDS (Inventory)
+
 app.get("/download-pdf", async (req, res) => {
   let browser;
   try {
@@ -389,22 +386,57 @@ app.get("/download-pdf", async (req, res) => {
     cards.forEach(card => {
       tableRows += `
         <tr style="border-bottom: 1px solid #333;">
-          <td style="padding: 10px;"><strong>${card.poke_name || 'Unknown'}</strong></td>
-          <td style="padding: 10px;">${card.condition_id || 'N/A'}</td>
-          <td style="padding: 10px;">${card.variant_id || 'N/A'}</td>
-          <td style="padding: 10px; color: #4caf50;">$${Number(card.final_price || 0).toFixed(2)}</td>
+          <td style="padding: 12px; font-weight: 600;">${card.poke_name || 'Unknown'}</td>
+          <td style="padding: 12px; color: #ccc;">${card.condition_id || 'N/A'}</td>
+          <td style="padding: 12px; color: #ccc;">${card.variant_id || 'N/A'}</td>
+          <td style="padding: 12px; color: #4caf50; font-weight: bold;">$${Number(card.final_price || 0).toFixed(2)}</td>
         </tr>
       `;
     });
 
-    const pdfHtmlContent = `<!DOCTYPE html><html><body><h1>Inventory Report</h1><table border="1">${tableRows}</table></body></html>`;
+    const pdfHtmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; background-color: #12121c; color: white; padding: 30px; }
+            h1 { color: #ef5350; text-align: left; margin-bottom: 5px; font-size: 28px; }
+            .subtitle { color: #888; margin-bottom: 25px; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background-color: #1a1924; color: #ccc; padding: 12px; text-align: left; font-size: 14px; border-bottom: 2px solid #333; }
+            td { padding: 12px; color: #e0e0e0; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <h1>Team Rocket Co.</h1>
+          <div class="subtitle">Master Inventory Stock Report</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Card Name</th>
+                <th>Condition ID</th>
+                <th>Variant ID</th>
+                <th>Final Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows ? tableRows : '<tr><td colspan="4" style="text-align:center;">No card records found in inventory.</td></tr>'}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
     browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
     page.setDefaultNavigationTimeout(60000);
     await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });
     const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
+
     res.contentType("application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=inventory-report.pdf");
     res.send(pdfBuffer);
   } catch (err) {
     if (browser) await browser.close();
