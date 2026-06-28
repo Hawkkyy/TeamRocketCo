@@ -23,9 +23,10 @@ app.use(cors({
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true 
+    credentials: true,
+    preflightContinue: false,   // Automatically handles and stops the OPTIONS request here
+    optionsSuccessStatus: 204   // Answers browser preflights with a 204 No Content status
 }));
-
 app.options('(.*)', cors());
 
 app.use(express.json());
