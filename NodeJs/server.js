@@ -176,8 +176,11 @@ app.get('/userlist', async (req, res) => {
         CONCAT(u.firstname, ' ', u.lastname) AS full_name,
         u.contact_no,
         u.area_code,
-        u.role 
+        l.city,
+        u.role,
+        u.created_at,
       FROM tbl_users u
+      LEFT JOIN tbl_location l ON u.area_code = l.area_code
     `;
     const [users] = await db.query(query); 
     res.json(orders); 
