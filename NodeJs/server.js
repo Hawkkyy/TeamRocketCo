@@ -13,7 +13,6 @@ const app = express();
 
 // 2. MIDDLEWARE HOOKS
 app.use(cors({
-<<<<<<< HEAD
     origin: function (origin, callback) {
         const allowedOrigins = ['https://hawkkyy.github.io', 'http://localhost:3000', 'http://127.0.0.1:5500'];
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -25,15 +24,6 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true 
-=======
-  origin: [
-    'https://hawkkyy.github.io', 
-    'http://localhost:3000',
-    'http://127.0.0.1:5500',   // Add Live Server's default IP
-    'http://localhost:5500'    // Add Live Server's fallback host
-  ],
-  credentials: true
->>>>>>> a7601c6c9eb2049fec5984b38146e0111b7b9dc8
 }));
 
 app.options('*', cors());
