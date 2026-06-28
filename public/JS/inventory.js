@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modal) {
         const orderBtn = document.createElement("button");
         orderBtn.innerText = "Proceed to Buy / Sell / Trade";
-        orderBtn.style.cssText = "margin-top: 15px; width: 50%; padding: 12px; background: #d40000; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-family: 'Mulish', sans-serif;";
+        orderBtn.style.cssText = "margin-top: 15px; width: 20%; padding: 12px; background: #d40000; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-family: 'Mulish', sans-serif;";
         
         const infoBlock = modal.querySelector(".modal-info") || modal;
         infoBlock.appendChild(orderBtn);
