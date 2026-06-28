@@ -183,7 +183,7 @@ app.get('/userlist', async (req, res) => {
       LEFT JOIN tbl_location l ON u.area_code = l.area_code
     `;
     const [users] = await db.query(query); 
-    res.json(orders); 
+    res.json(users); 
   } catch (err) {
     console.error("Users data query error:", err);
     res.status(500).json({ error: "Failed to retrieve user data" });
