@@ -366,6 +366,15 @@ app.post("/transaction", async (req, res) => {
     }
 });
 
+app.get("/adminsection/inv-prices.html", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../public/inv-prices.html"));
+});
+
+app.get("/adminsection/a-dashboard.html", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../public/a-dashboard.html"));
+});
+
+
 // 7. WEB TRAFFIC BOUNDS
 app.listen(3000, () => {
     console.log(`Server running on port 3000`);
