@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="CSS/styles.css">
+        <link rel="icon" type="" href="imgs/RLogo.png"> 
+        <title> Team Rocket Co. </title>
+    </head>
+
+    <body>
+         <header>
+            <nav>
+                <ul>
+                    <li><a href="index.html"><img src="imgs/TeamRocketLogo.png" alt="logo" style="width:100%px;height: 100px;"></a> </li>
+                    <li><a class="navi" href="index.html">Home</a></li>
+                    <li><a class="navi" href="a-dashboard.html">Dashboard</a></li>
+                    <li><a class="navi" href="about-us.html">About Us</a></li>
+                    <li><a class="navi" href="services.html">Services</a></li>
+                    <li><a class="navi" href="contact-us.html">Contact Us</a></li>
+                    <li><a class="navi"  href="login.html">Logout</a></li>
+                    
+                </ul>
+            </nav>
+        </header>
+         <div class="dashboard-container">
+            <div class="sidenav">
+                <a href="a-dashboard.html">Home</a>
+                <a href="tbltransactions.html">Orders</a>
+                <a href="tblcards.html">Inventory</a>
+                <a href="tblusers.html">Users</a>
+                <a href="tblstatic.html">Other Data</a>
+            </div>
+
+            <main style="width: 100%; overflow-y: auto; padding: 20px;">
+                <h1 style="text-align: left"> Dashboard - Inventory </h1>
+                <br>
+                
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button onclick="window.location.href='/download-pdf'" style="padding: 10px 20px; background-color: #ef5350; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        Download PDF Report
+                    </button>
+                    <button id="openModalBtn" style="background-color: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        + Add New Card
+                    </button>
+                </div>
+
+                <div id="cards" class="inventory-container"> Please wait for the database to load! </div>
+            </main>
+         </div>
+        <footer>
+            <p>Group 5 / teamrocketco@gmail.com / (02) 8911-1111 / 8353-9887 </p>
+            <p> Copyright @2026 </p>
+            <nav>
+                <ul>
+                    <li><a class="navi" href="index.html">Home</a></li>
+                    <li><a class="navi" href="about-us.html">About Us</a></li>
+                    <li><a class="navi" href="services.html">Services</a></li>
+                    <li><a class="navi" href="contact-us.html">Contact Us</a></li>
+                </ul>
+            </nav>
+        </footer>
+
+        <div id="cardModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+          <div style="background-color: #1a1924; padding: 30px; border-radius: 8px; width: 400px; border: 1px solid #333; position: relative;">
+            <span id="closeModalBtn" style="position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="color: #ef5350; margin-top: 0; margin-bottom: 20px;">Add New Pokémon Card</h3>
+            
+            <form id="addCardForm" style="display: flex; flex-direction: column; gap: 15px;">
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Pokémon ID (poke_id)</label>
+                <input type="number" id="pokeId" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Condition ID</label>
+                <input type="text" id="conditionId" placeholder="e.g., NM" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Variant ID</label>
+                <input type="text" id="variantId" placeholder="e.g., Holo" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Stock Quantity</label>
+                <input type="number" id="stockQty" value="1" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Final Price ($)</label>
+                <input type="number" step="0.01" id="finalPrice" placeholder="0.00" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <button type="submit" style="background-color: #4caf50; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                Save Card to Database
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <script>
+            async function displayCards() {
+                try {
+                    const response = await fetch('https://teamrocketco.onrender.com/inventoryprices');
+                    const cards = await response.json();
+
+                    const shopContainer = document.getElementById('cards');
+                    shopContainer.innerHTML = `
+                                    <table>
+                                        <tr>
+                                            <th>Card ID</th>
+                                            <th>Pokemon Name</th>
+                                            <th>Condition</th>
+                                            <th>Variant</th>
+                                            <th>Price</th>
+                                            <th>Stock Qty.</th>
+                                        </tr>
+                                    </table>`;
+                    cards.forEach(card => {
+                        const cardHTML = `
+                            <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+                                <table>
+                                    <tr>
+                                        <td> ${card.card_id} </td>
+                                        <td> ${card.poke_name} </td>
+                                        <td> ${card.condition_id} </td>
+                                        <td> ${card.variant_id} </td>
+                                        <td> ${Number(card.final_price).toFixed(2)} </td>
+                                        <td> ${card.stock_qty} </td>
+                                    </tr>
+                                </table>
+                                    <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                        Delete Card
+                                    </button>
+                                </div>`;
+                        shopContainer.innerHTML += cardHTML;
+                    });
+
+                } catch (error) {
+                    document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    console.error(error);
+                }
+            }
+            displayCards();
+        </script>
+        <script src="JS/inv-prices.js" defer></script>
+    </body>
+</html>

@@ -146,6 +146,24 @@ app.get('/inventoryprices', async (req, res) => {
   }
 });
 
+app.get('/orders', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        t.transaction_id,
+        t.user_id, 
+        t.order_type, 
+        t.order_total, 
+      FROM tbl_transactions t
+    `;
+    const [orders] = await db.query(query); 
+    res.json(orders); 
+  } catch (err) {
+    console.error("Inventory data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve inventory data" });
+  }
+});
+
 
  //     LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
 //LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
