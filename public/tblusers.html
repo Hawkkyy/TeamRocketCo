@@ -101,7 +101,8 @@
                     const response = await fetch('https://teamrocketco.onrender.com/userlist');
                     const users = await response.json();
 
-                    const shopContainer = document.getElementById('cards');
+                    // FIX 2: Changed selector from 'cards' to 'users'
+                    const shopContainer = document.getElementById('users');
                     let htmlContent =`
                                 <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
                                     <table>
@@ -142,11 +143,14 @@
                                 `;
                             shopContainer.innerHTML = htmlContent;
                 } catch (error) {
-                    document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    // FIX 3: Confirmed catch block targets 'users' container consistently
+                    document.getElementById('users').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
                     console.error(error);
                 }
             }
-            displayCards();
+            document.addEventListener('DOMContentLoaded', () => {
+                displayCards();
+            });;
         </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>
