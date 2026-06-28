@@ -131,9 +131,15 @@
                                             <td> ${user.role} </td>
                                             <td> ${user.created_at} </td>
                                             <td> ${user.updated_at} </td>
-                                            <td><button onclick="deleteCard(${user.user_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                            Delete Card
-                                            </button> </td>
+                                            <td>
+                                                <button onclick="openEditModal(${JSON.stringify(user).bold()})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-right: 5px;">
+                                                    Edit
+                                                </button> 
+    
+                                                <button onclick="deleteCard(${user.user_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                                    Delete Card
+                                                </button> 
+                                            </td>
                                         </tr>
                                         `;
                             });
@@ -148,9 +154,10 @@
                     console.error(error);
                 }
             }
+            // This guarantees the 'users' div exists in the DOM before running
             document.addEventListener('DOMContentLoaded', () => {
                 displayCards();
-            });;
+    });;
         </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>
