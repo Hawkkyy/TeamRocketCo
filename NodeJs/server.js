@@ -371,8 +371,11 @@ app.put('/update-user/:id', async (req, res) => {
   }
 });
 
+// ==========================================
 // 8. FILE REPORTING ENDPOINTS
-// Route A: Download Cards/Inventory Report
+// ==========================================
+
+// ROUTE A: This is for CARDS (Inventory)
 app.get("/download-pdf", async (req, res) => {
   let browser;
   try {
@@ -397,7 +400,8 @@ app.get("/download-pdf", async (req, res) => {
     const pdfHtmlContent = `<!DOCTYPE html><html><body><h1>Inventory Report</h1><table border="1">${tableRows}</table></body></html>`;
     browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
-  await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
     res.contentType("application/pdf");
     res.send(pdfBuffer);
@@ -407,7 +411,7 @@ app.get("/download-pdf", async (req, res) => {
   }
 });
 
-// Route B: Download Order History Report (Separated completely!)
+// ROUTE B: This is for TRANSACTIONS (Orders)
 app.get("/download-orders-pdf", async (req, res) => {
   let browser;
   try {
@@ -432,6 +436,23 @@ app.get("/download-orders-pdf", async (req, res) => {
         </tr>
       `;
     });
+
+    const pdfHtmlContent = `<!DOCTYPE html><html><body style="font-family:Arial; background:#12121c; color:white; padding:30px;"><h1>Order History Report</h1><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#1a1924; text-align:left;"><th>Tx ID</th><th>User</th><th>Name</th><th>Type</th><th>Date</th><th>Total</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
+
+    browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    const page = await browser.newPage();
+    await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+
+    res.contentType("application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=order-history.pdf");
+    res.send(pdfBuffer);
+  } catch (err) {
+    if (browser) await browser.close();
+    res.status(500).send(`PDF Error: ${err.message}`);
+  }
+});
 
     const pdfHtmlContent = `<!DOCTYPE html><html><body style="font-family:Arial; background:#12121c; color:white; padding:30px;"><h1>Order History Report</h1><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#1a1924; text-align:left;"><th>Tx ID</th><th>User</th><th>Name</th><th>Type</th><th>Date</th><th>Total</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
 
