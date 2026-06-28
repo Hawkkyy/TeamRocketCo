@@ -126,7 +126,7 @@
                                 <p><strong>Condition:</strong> ${card.condition_id}</p>
                                 <p><strong>Variant:</strong> ${card.variant_id}</p>
                                 <p class="price">$${Number(card.final_price).toFixed(2)}</p>
-                                <button onclick="deleteCard(${card.inventory_id || card.id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
                                     Delete Card
                                 </button>
                             </div>`;

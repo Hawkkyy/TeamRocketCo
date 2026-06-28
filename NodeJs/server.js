@@ -129,6 +129,7 @@ app.get('/inventoryprices', async (req, res) => {
   try {
     const query = `
       SELECT 
+        c.card_id,
         p.poke_name, 
         c.condition_id, 
         c.variant_id, 
