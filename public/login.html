@@ -30,9 +30,13 @@
                 <form name="loginForm" action="https://teamrocketco.onrender.com/login" onsubmit="return validateForm()" method="POST">
                     <h2 style="text-align: center; margin-bottom: 10px;"> Login </h2>
                     Username: <input type="text" name="user">
-                    Password: <input type="password" name="pass">
+                    Password: <input type="password" name="pass" id="myPassword">
+                              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: white; margin-top: 10px;">
+                             <input type="checkbox" onclick="document.getElementById('myPassword').type = this.checked ? 'text' : 'password'">
+                                Show Password
+                                </label>
+
                     <input type="submit" value="Submit">
-                    
                     <input class="sw" type="button" onclick="window.location.href='signup.html'" value="No Account? Sign-Up!">
 
                 </form>
