@@ -113,186 +113,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// INVENTORY MANAGEMENT ENDPOINTS
-app.get("/inventory", async (req, res) => {
-  try {
-    const query = `
-      SELECT 
-        c.card_id, 
-        p.poke_name, 
-        p.base_price, 
-        c.stock_qty, 
-        c.condition_id, 
-        c.variant_id
-      FROM tbl_cards c
-      JOIN tbl_pokemons p ON c.poke_id = p.poke_id
-    `;
-    const [rows] = await db.query(query);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to retrieve inventory data" });
-  }
-});
-
-app.get('/inventoryprices', async (req, res) => {
-  try {
-    const query = `
-      SELECT 
-        c.card_id,
-        p.poke_name, 
-        c.condition_id, 
-        c.variant_id, 
-        c.final_price,
-        c.stock_qty
-      FROM tbl_cards c
-      LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
-    `;
-    const [cards] = await db.query(query); 
-    res.json(cards); 
-  } catch (err) {
-    console.error("Inventory data query error:", err);
-    res.status(500).json({ error: "Failed to retrieve inventory data" });
-  }
-});
-
-app.get('/orders', async (req, res) => {
-  try {
-    const query = `
-      SELECT 
-        t.transaction_id,
-        t.user_id, 
-        u.username,
-        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
-        t.order_type, 
-        t.order_total,
-        t.order_date
-      FROM tbl_transactions t
-      LEFT JOIN tbl_users u ON t.user_id = u.user_id
-    `;
-    const [orders] = await db.query(query); 
-    res.json(orders); 
-  } catch (err) {
-    console.error("Orders data query error:", err);
-    res.status(500).json({ error: "Failed to retrieve transaction data" });
-  }
-});
-
-app.get('/userlist', async (req, res) => {
-  try {
-    const query = `
-      SELECT 
-        u.user_id,
-        u.username,
-        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
-        u.contact_no,
-        u.area_code,
-        l.city,
-        u.role,
-        u.created_at,
-        u.updated_at
-      FROM tbl_users u
-      LEFT JOIN tbl_location l ON u.area_code = l.area_code
-    `;
-    const [users] = await db.query(query); 
-    res.json(users); 
-  } catch (err) {
-    console.error("Users data query error:", err);
-    res.status(500).json({ error: "Failed to retrieve user data" });
-  }
-});
-
-// PUT: Update an existing user's profile details
-app.put('/update-user/:id', async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const { username, full_name, contact_no, city } = req.body;
-
-    // Validate that basic details were sent
-    if (!username || !full_name) {
-      return res.status(400).json({ error: "Username and Full Name are required fields." });
-    }
-
-    // Split Full Name back into firstname and lastname for your tbl_users schema structure
-    const nameParts = full_name.trim().split(" ");
-    const firstname = nameParts[0];
-    const lastname = nameParts.slice(1).join(" ") || ""; // Fallback if no last name provided
-
-    // Update query targeting the correct 'tbl_users' table layout
-    const sql = `
-      UPDATE tbl_users 
-      SET username = ?, firstname = ?, lastname = ?, contact_no = ?, updated_at = NOW() 
-      WHERE user_id = ?
-    `;
-
-    const [result] = await db.query(sql, [username, firstname, lastname, contact_no, userId]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "User profile record not found." });
-    }
-
-    res.json({ message: "User profile updated successfully!" });
-  } catch (err) {
-    console.error("Failed to update user profile records:", err);
-    res.status(500).json({ error: "Database transaction failed", details: err.message });
-  }
-});
-
- //     LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
-//LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
-
-// CARDS //
-
-// INSERT: Add a new card to the inventory
-app.post("/inventory/add", async (req, res) => {
-  try {
-    const { poke_id, condition_id, variant_id, stock_qty, final_price } = req.body;
-
-    // Validate that required fields exist
-    if (!poke_id || !condition_id || !variant_id) {
-      return res.status(400).json({ error: "Missing required card fields" });
-    }
-
-    const sql = `
-      INSERT INTO tbl_cards (poke_id, condition_id, variant_id, stock_qty, final_price) 
-      VALUES (?, ?, ?, ?, ?)
-    `;
-
-    await db.query(sql, [
-      poke_id, 
-      condition_id, 
-      variant_id, 
-      stock_qty || 0, 
-      final_price || 0.00
-    ]);
-
-    res.status(201).json({ message: "Card successfully added to inventory!" });
-  } catch (err) {
-    console.error("Failed to insert card:", err);
-    res.status(500).json({ error: "Failed to add card", details: err.message });
-  }
-});
-
-// DELETE: Remove a card from the inventory by its ID
-app.delete("/inventory/delete/:id", async (req, res) => {
-  try {
-    const cardId = req.params.id;
-
-    const sql = "DELETE FROM tbl_cards WHERE card_id = ?";
-    const [result] = await db.query(sql, [cardId]);
-
-    // Check if a row was actually deleted
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Card not found or already deleted" });
-    }
-
-    res.json({ message: `Card ID ${cardId} successfully deleted!` });
-  } catch (err) {
-    console.error("Failed to delete card:", err);
-    res.status(500).json({ error: "Failed to delete card", details: err.message });
-  }
-});
-
 
 
 
@@ -471,4 +291,189 @@ app.get("/adminsection/a-dashboard.html", (req, res) => {
 // 7. WEB TRAFFIC BOUNDS
 app.listen(3000, () => {
     console.log(`Server running on port 3000`);
+});
+
+
+
+
+
+
+// INVENTORY MANAGEMENT ENDPOINTS
+app.get("/inventory", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        c.card_id, 
+        p.poke_name, 
+        p.base_price, 
+        c.stock_qty, 
+        c.condition_id, 
+        c.variant_id
+      FROM tbl_cards c
+      JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+    `;
+    const [rows] = await db.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to retrieve inventory data" });
+  }
+});
+
+app.get('/inventoryprices', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        c.card_id,
+        p.poke_name, 
+        c.condition_id, 
+        c.variant_id, 
+        c.final_price,
+        c.stock_qty
+      FROM tbl_cards c
+      LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+    `;
+    const [cards] = await db.query(query); 
+    res.json(cards); 
+  } catch (err) {
+    console.error("Inventory data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve inventory data" });
+  }
+});
+
+app.get('/orders', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        t.transaction_id,
+        t.user_id, 
+        u.username,
+        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
+        t.order_type, 
+        t.order_total,
+        t.order_date
+      FROM tbl_transactions t
+      LEFT JOIN tbl_users u ON t.user_id = u.user_id
+    `;
+    const [orders] = await db.query(query); 
+    res.json(orders); 
+  } catch (err) {
+    console.error("Orders data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve transaction data" });
+  }
+});
+
+app.get('/userlist', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        u.user_id,
+        u.username,
+        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
+        u.contact_no,
+        u.area_code,
+        l.city,
+        u.role,
+        u.created_at,
+        u.updated_at
+      FROM tbl_users u
+      LEFT JOIN tbl_location l ON u.area_code = l.area_code
+    `;
+    const [users] = await db.query(query); 
+    res.json(users); 
+  } catch (err) {
+    console.error("Users data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve user data" });
+  }
+});
+
+// PUT: Update an existing user's profile details
+app.put('/update-user/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { username, full_name, contact_no, city } = req.body;
+
+    // Validate that basic details were sent
+    if (!username || !full_name) {
+      return res.status(400).json({ error: "Username and Full Name are required fields." });
+    }
+
+    // Split Full Name back into firstname and lastname for your tbl_users schema structure
+    const nameParts = full_name.trim().split(" ");
+    const firstname = nameParts[0];
+    const lastname = nameParts.slice(1).join(" ") || ""; // Fallback if no last name provided
+
+    // Update query targeting the correct 'tbl_users' table layout
+    const sql = `
+      UPDATE tbl_users 
+      SET username = ?, firstname = ?, lastname = ?, contact_no = ?, updated_at = NOW() 
+      WHERE user_id = ?
+    `;
+
+    const [result] = await db.query(sql, [username, firstname, lastname, contact_no, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User profile record not found." });
+    }
+
+    res.json({ message: "User profile updated successfully!" });
+  } catch (err) {
+    console.error("Failed to update user profile records:", err);
+    res.status(500).json({ error: "Database transaction failed", details: err.message });
+  }
+});
+
+ //     LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
+//LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
+
+// CARDS //
+
+// INSERT: Add a new card to the inventory
+app.post("/inventory/add", async (req, res) => {
+  try {
+    const { poke_id, condition_id, variant_id, stock_qty, final_price } = req.body;
+
+    // Validate that required fields exist
+    if (!poke_id || !condition_id || !variant_id) {
+      return res.status(400).json({ error: "Missing required card fields" });
+    }
+
+    const sql = `
+      INSERT INTO tbl_cards (poke_id, condition_id, variant_id, stock_qty, final_price) 
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    await db.query(sql, [
+      poke_id, 
+      condition_id, 
+      variant_id, 
+      stock_qty || 0, 
+      final_price || 0.00
+    ]);
+
+    res.status(201).json({ message: "Card successfully added to inventory!" });
+  } catch (err) {
+    console.error("Failed to insert card:", err);
+    res.status(500).json({ error: "Failed to add card", details: err.message });
+  }
+});
+
+// DELETE: Remove a card from the inventory by its ID
+app.delete("/inventory/delete/:id", async (req, res) => {
+  try {
+    const cardId = req.params.id;
+
+    const sql = "DELETE FROM tbl_cards WHERE card_id = ?";
+    const [result] = await db.query(sql, [cardId]);
+
+    // Check if a row was actually deleted
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Card not found or already deleted" });
+    }
+
+    res.json({ message: `Card ID ${cardId} successfully deleted!` });
+  } catch (err) {
+    console.error("Failed to delete card:", err);
+    res.status(500).json({ error: "Failed to delete card", details: err.message });
+  }
 });
