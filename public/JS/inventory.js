@@ -62,6 +62,6 @@ async function setupInventoryClicks() {
     }
 }
 
-window.onload = setupInventoryClicks;
+window.onload = setupInventoryClicks; 
 
 
