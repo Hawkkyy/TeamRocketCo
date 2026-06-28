@@ -217,6 +217,48 @@ app.get("/download-pdf", async (req, res) => {
   }
 });
 
+// NEW SEPARATE ENDPOINT FOR ORDERS
+app.get("/download-orders-pdf", async (req, res) => {
+  let browser;
+  try {
+    const query = `
+      SELECT t.transaction_id, t.user_id, u.username, CONCAT(u.firstname, ' ', u.lastname) AS full_name, t.order_type, t.order_date, t.order_total
+      FROM tbl_transactions t
+      LEFT JOIN tbl_users u ON t.user_id = u.user_id
+      ORDER BY t.transaction_id DESC;
+    `;
+    const [orders] = await db.query(query);
+
+    let tableRows = "";
+    orders.forEach(order => {
+      tableRows += `
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 10px;">${order.transaction_id}</td>
+          <td style="padding: 10px;">${order.user_id} (${order.username || 'N/A'})</td>
+          <td style="padding: 10px;">${order.full_name || 'Unknown'}</td>
+          <td style="padding: 10px; font-weight: bold;">${order.order_type}</td>
+          <td style="padding: 10px;">${order.order_date ? new Date(order.order_date).toLocaleString() : 'N/A'}</td>
+          <td style="padding: 10px; color: #4caf50;">$${Number(order.order_total || 0).toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    const pdfHtmlContent = `<!DOCTYPE html><html><body style="font-family:Arial; background:#12121c; color:white; padding:30px;"><h1>Order History Report</h1><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#1a1924; text-align:left;"><th>Tx ID</th><th>User</th><th>Name</th><th>Type</th><th>Date</th><th>Total</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
+
+    browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    const page = await browser.newPage();
+    await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+
+    res.contentType("application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=order-history.pdf");
+    res.send(pdfBuffer);
+  } catch (err) {
+    if (browser) await browser.close();
+    res.status(500).send(`PDF Error: ${err.message}`);
+  }
+});
 
 app.get('/location', async (req, res) => {
   try {
