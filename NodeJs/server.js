@@ -437,6 +437,7 @@ app.get("/download-orders-pdf", async (req, res) => {
 
     browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(60000);
     await page.setContent(pdfHtmlContent, { waitUntil: "domcontentloaded" });
     const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
