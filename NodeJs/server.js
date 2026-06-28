@@ -13,12 +13,7 @@ const app = express();
 
 // 2. MIDDLEWARE HOOKS
 app.use(cors({
-  origin: [
-    'https://hawkkyy.github.io', 
-    'http://localhost:3000',
-    'http://127.0.0.1:5500',   // Add Live Server's default IP
-    'http://localhost:5500'    // Add Live Server's fallback host
-  ],
+  origin: ['https://hawkkyy.github.io', 'http://localhost:3000'],
   credentials: true
 }));
 
@@ -426,27 +421,6 @@ app.get("/adminsection/a-dashboard.html", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../public/a-dashboard.html"));
 });
 
-app.put('/update-user/:id', (req, res) => {
-    const userId = req.params.id;
-    const { username, full_name, contact_no, city } = req.body;
-
-    const sqlQuery = `
-        UPDATE tbl_users 
-        SET username = ?, full_name = ?, contact_no = ?, city = ?, updated_at = NOW() 
-        WHERE user_id = ?
-    `;
-
-    const values = [username, full_name, contact_no, city, userId];
-
-    db.query(sqlQuery, values, (error, results) => {
-        if (error) {
-            console.error("Database UPDATE error:", error);
-            return res.status(500).json({ error: "Failed to update record in database." });
-        }
-        
-        res.status(200).json({ message: "User successfully updated!" });
-    });
-});
 
 // 7. WEB TRAFFIC BOUNDS
 app.listen(3000, () => {
