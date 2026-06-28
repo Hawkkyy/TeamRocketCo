@@ -134,7 +134,7 @@ app.get('/inventoryprices', async (req, res) => {
         c.condition_id, 
         c.variant_id, 
         c.final_price,
-        c.stock_qty,
+        c.stock_qty
       FROM tbl_cards c
       LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
     `;
