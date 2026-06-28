@@ -13,9 +13,20 @@ const app = express();
 
 // 2. MIDDLEWARE HOOKS
 app.use(cors({
-  origin: ['https://hawkkyy.github.io', 'http://localhost:3000'],
-  credentials: true
+    origin: function (origin, callback) {
+        const allowedOrigins = ['https://hawkkyy.github.io', 'http://localhost:3000', 'http://127.0.0.1:5500'];
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true 
 }));
+
+app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
