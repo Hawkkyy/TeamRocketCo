@@ -287,11 +287,59 @@ app.get('/location', async (req, res) => {
         l.city
       FROM tbl_location l
     `;
-    const [users] = await db.query(query); 
-    res.json(users); 
+    const [locs] = await db.query(query); 
+    res.json(locs); 
   } catch (err) {
-    console.error("Users data query error:", err);
-    res.status(500).json({ error: "Failed to retrieve lopcation data" });
+    console.error("Location data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve location data" });
+  }
+});
+
+app.get('/elements', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        e.element_id,
+        e.elements
+      FROM tbl_elements e
+    `;
+    const [elements] = await db.query(query); 
+    res.json(elements); 
+  } catch (err) {
+    console.error("Elements data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve element data" });
+  }
+});
+app.get('/conditions', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        c.condition_id,
+        c.conditions,
+        c.condition_discount
+      FROM tbl_conditions c
+    `;
+    const [cond] = await db.query(query); 
+    res.json(cond); 
+  } catch (err) {
+    console.error("Condition data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve condition data" });
+  }
+});
+app.get('/variants', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        v.variant_id,
+        v.variants,
+        v.variant_multiplier
+      FROM tbl_variants v
+    `;
+    const [vars] = await db.query(query); 
+    res.json(vars); 
+  } catch (err) {
+    console.error("Variants data query error:", err);
+    res.status(500).json({ error: "Failed to retrieve variant data" });
   }
 });
 
