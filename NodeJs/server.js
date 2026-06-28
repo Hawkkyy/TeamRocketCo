@@ -103,7 +103,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// 5. INVENTORY MANAGEMENT ENDPOINTS
+// INVENTORY MANAGEMENT ENDPOINTS
 app.get("/inventory", async (req, res) => {
   try {
     const query = `
@@ -129,14 +129,14 @@ app.get('/inventoryprices', async (req, res) => {
   try {
     const query = `
       SELECT 
+        c.card_id,
         p.poke_name, 
         c.condition_id, 
         c.variant_id, 
-        c.final_price
+        c.final_price,
+        c.stock_qty,
       FROM tbl_cards c
       LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
-      LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
-      LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
     `;
     const [cards] = await db.query(query); 
     res.json(cards); 
@@ -146,6 +146,9 @@ app.get('/inventoryprices', async (req, res) => {
   }
 });
 
+
+ //     LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
+//LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
 
 // CARDS //
 
@@ -292,7 +295,6 @@ app.get("/download-pdf", async (req, res) => {
     res.status(500).send(`Failed to compile document ledger. Error: ${err.message || JSON.stringify(err) || err}`);
   }
 });
-
 
 app.post("/transaction", async (req, res) => {
     const { userId, cardId, orderType, qty, totalPrice } = req.body;

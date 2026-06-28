@@ -109,23 +109,22 @@
                             <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
                                 <table>
                                     <tr>
-                                        <th>Cards</th>
-                                        <th>Normal</th>
-                                        <th>Reverse Holo</th>
-                                        <th>Holo</th>
-                                        <th>WPromo</th>
-                                        <th>First Edition</th>
+                                        <th>Card ID</th>
+                                        <th>Pokemon Name</th>
                                         <th>Condition</th>
-                                        <th>Total Stock</th>
+                                        <th>Variant</th>
+                                        <th>Price</th>
+                                        <th>Stock Qty.</th>
                                     </tr>
                                     <tr>
+                                        <td> ${card.card_id} </td>
                                         <td> ${card.poke_name} </td>
-                                        <td> ${card.final_price} </td>
+                                        <td> ${card.condition_id} </td>
+                                        <td> ${card.variant_id} </td>
+                                        <td> ${Number(card.final_price).toFixed(2)} </td>
+                                        <td> ${card.stock_qty} </td>
                                     </tr>
                                 </table>
-                                <p><strong>Condition:</strong> ${card.condition_id}</p>
-                                <p><strong>Variant:</strong> ${card.variant_id}</p>
-                                <p class="price">$${Number(card.final_price).toFixed(2)}</p>
                                 <button onclick="deleteCard(${card.inventory_id || card.id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
                                     Delete Card
                                 </button>
