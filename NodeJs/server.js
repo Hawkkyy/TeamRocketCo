@@ -13,6 +13,7 @@ const app = express();
 
 // 2. MIDDLEWARE HOOKS
 app.use(cors({
+<<<<<<< HEAD
     origin: function (origin, callback) {
         const allowedOrigins = ['https://hawkkyy.github.io', 'http://localhost:3000', 'http://127.0.0.1:5500'];
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -24,6 +25,15 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true 
+=======
+  origin: [
+    'https://hawkkyy.github.io', 
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',   // Add Live Server's default IP
+    'http://localhost:5500'    // Add Live Server's fallback host
+  ],
+  credentials: true
+>>>>>>> a7601c6c9eb2049fec5984b38146e0111b7b9dc8
 }));
 
 app.options('*', cors());
@@ -432,27 +442,6 @@ app.get("/adminsection/a-dashboard.html", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../public/a-dashboard.html"));
 });
 
-app.put('/update-user/:id', (req, res) => {
-    const userId = req.params.id;
-    const { username, full_name, contact_no, city } = req.body;
-
-    const sqlQuery = `
-        UPDATE tbl_users 
-        SET username = ?, full_name = ?, contact_no = ?, city = ?, updated_at = NOW() 
-        WHERE user_id = ?
-    `;
-
-    const values = [username, full_name, contact_no, city, userId];
-
-    db.query(sqlQuery, values, (error, results) => {
-        if (error) {
-            console.error("Database UPDATE error:", error);
-            return res.status(500).json({ error: "Failed to update record in database." });
-        }
-        
-        res.status(200).json({ message: "User successfully updated!" });
-    });
-});
 
 // 7. WEB TRAFFIC BOUNDS
 app.listen(3000, () => {
