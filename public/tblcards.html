@@ -21,7 +21,6 @@
                     <li><a class="navi" href="services.html">Services</a></li>
                     <li><a class="navi" href="contact-us.html">Contact Us</a></li>
                     <li><a class="navi"  href="login.html">Logout</a></li>
-                    
                 </ul>
             </nav>
         </header>
@@ -95,52 +94,129 @@
           </div>
         </div>
 
+        <div id="editCardModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+          <div style="background-color: #1a1924; padding: 30px; border-radius: 8px; width: 400px; border: 1px solid #333; position: relative;">
+            <span id="closeEditCardModalBtn" onclick="document.getElementById('editCardModal').style.display='none'" style="position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="color: #0288d1; margin-top: 0; margin-bottom: 20px;">Edit Card Stock & Pricing</h3>
+            
+            <form id="editCardForm" style="display: flex; flex-direction: column; gap: 15px;">
+              <input type="hidden" id="editCardId">
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Stock Quantity</label>
+                <input type="number" id="editStockQty" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Final Price ($)</label>
+                <input type="number" step="0.01" id="editFinalPrice" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <button type="submit" style="background-color: #0288d1; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                Update Changes
+              </button>
+            </form>
+          </div>
+        </div>
+
         <script>
+            // Global array variables to safely cache fetched cards
+            let cachedCards = [];
+
             async function displayCards() {
                 try {
                     const response = await fetch('https://teamrocketco.onrender.com/inventoryprices');
                     const cards = await response.json();
+                    cachedCards = cards; // Sync cache
 
                     const shopContainer = document.getElementById('cards');
                     let htmlContent =`
-                                <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                                    <table>
-                                        <tr>
-                                            <th>Card ID</th>
-                                            <th>Pokemon Name</th>
-                                            <th>Condition</th>
-                                            <th>Variant</th>
-                                            <th>Price</th>
-                                            <th>Stock Qty.</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        `
+                        <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+                            <table>
+                                <tr>
+                                    <th>Card ID</th>
+                                    <th>Pokemon Name</th>
+                                    <th>Condition</th>
+                                    <th>Variant</th>
+                                    <th>Price</th>
+                                    <th>Stock Qty.</th>
+                                    <th>Action</th>
+                                </tr>
+                                `;
                         cards.forEach(card => {
                             htmlContent += `
-                                        <tr>
-                                            <td> ${card.card_id} </td>
-                                            <td> ${card.poke_name} </td>
-                                            <td> ${card.condition_id} </td>
-                                            <td> ${card.variant_id} </td>
-                                            <td> ${Number(card.final_price).toFixed(2)} </td>
-                                            <td> ${card.stock_qty} </td>
-                                            <td><button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                <tr>
+                                    <td> ${card.card_id} </td>
+                                    <td> ${card.poke_name} </td>
+                                    <td> ${card.condition_id} </td>
+                                    <td> ${card.variant_id} </td>
+                                    <td> $${Number(card.final_price).toFixed(2)} </td>
+                                    <td> ${card.stock_qty} </td>
+                                    <td>
+                                        <button onclick="openEditCardModal(${card.card_id})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-right: 5px;">
+                                            Edit
+                                        </button>
+                                        <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
                                             Delete Card
-                                            </button> </td>
-                                        </tr>
-                                        `;
+                                        </button> 
+                                    </td>
+                                </tr>
+                                `;
                             });
                             htmlContent += `
-                                        </table>
-                                    </div>
-                                `;
+                                    </table>
+                                </div>
+                            `;
                             shopContainer.innerHTML = htmlContent;
                 } catch (error) {
-                    document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    const errorContainer = document.getElementById('cards');
+                    if (errorContainer) {
+                        errorContainer.innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    }
                     console.error(error);
                 }
             }
-            displayCards();
+
+            // Populate overlay fields using the safe cached array lookup
+            function openEditCardModal(cardId) {
+                const card = cachedCards.find(c => c.card_id === cardId);
+                if (!card) return;
+
+                document.getElementById('editCardId').value = card.card_id;
+                document.getElementById('editStockQty').value = card.stock_qty;
+                document.getElementById('editFinalPrice').value = card.final_price;
+
+                document.getElementById('editCardModal').style.display = 'flex';
+            }
+
+            // Submit execution handler to send modifications back to Render server endpoints
+            document.getElementById('editCardForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const cardId = document.getElementById('editCardId').value;
+                const updatedData = {
+                    stock_qty: document.getElementById('editStockQty').value,
+                    final_price: document.getElementById('editFinalPrice').value
+                };
+
+                try {
+                    const response = await fetch(`https://teamrocketco.onrender.com/update-card/${cardId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    if (response.ok) {
+                        alert('Card inventory updated successfully!');
+                        document.getElementById('editCardModal').style.display = 'none';
+                        displayCards(); // Fresh interface redraw
+                    } else {
+                        alert('Failed to save updates to inventory layout.');
+                    }
+                } catch (err) {
+                    console.error("Card processing modification failure:", err);
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                displayCards();
+            });
         </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>

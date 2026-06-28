@@ -21,7 +21,6 @@
                     <li><a class="navi" href="services.html">Services</a></li>
                     <li><a class="navi" href="contact-us.html">Contact Us</a></li>
                     <li><a class="navi"  href="login.html">Logout</a></li>
-                    
                 </ul>
             </nav>
         </header>
@@ -42,8 +41,8 @@
                     <button onclick="window.location.href='/download-pdf'" style="padding: 10px 20px; background-color: #ef5350; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                         Download PDF Report
                     </button>
-                    <button id="openModalBtn" style="background-color: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                        + Add New Card
+                    <button onclick="document.getElementById('orderModal').style.display='flex'" style="background-color: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        + Add New Order
                     </button>
                 </div>
 
@@ -63,61 +62,195 @@
             </nav>
         </footer>
 
-        <div id="cardModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+        <div id="orderModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
           <div style="background-color: #1a1924; padding: 30px; border-radius: 8px; width: 400px; border: 1px solid #333; position: relative;">
-            <span id="closeModalBtn" style="position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-            <h3 style="color: #ef5350; margin-top: 0; margin-bottom: 20px;">Add New Pokémon Card</h3>
+            <span onclick="document.getElementById('orderModal').style.display='none'" style="position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="color: #4caf50; margin-top: 0; margin-bottom: 20px;">Add New Ledger Order</h3>
+            
+            <form id="addOrderForm" style="display: flex; flex-direction: column; gap: 15px;">
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">User ID</label>
+                <input type="number" id="orderUserId" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Card ID</label>
+                <input type="number" id="orderCardId" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Order Type</label>
+                <select id="orderType" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                    <option value="TRADE">TRADE</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Quantity</label>
+                <input type="number" id="orderQty" value="1" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Total Price ($)</label>
+                <input type="number" step="0.01" id="orderTotalPrice" placeholder="0.00" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+              </div>
+              <button type="submit" style="background-color: #4caf50; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                Save Order to Database
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div id="editOrderModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+          <div style="background-color: #1a1924; padding: 30px; border-radius: 8px; width: 400px; border: 1px solid #333; position: relative;">
+            <span onclick="document.getElementById('editOrderModal').style.display='none'" style="position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="color: #0288d1; margin-top: 0; margin-bottom: 20px;">Edit Order Classification</h3>
+            
+            <form id="editOrderForm" style="display: flex; flex-direction: column; gap: 15px;">
+              <input type="hidden" id="editTransactionId">
+              <div>
+                <label style="display: block; font-size: 13px; color: #ccc; margin-bottom: 5px;">Order Type</label>
+                <select id="editOrderType" required style="width: 100%; padding: 10px; background: #12121c; color: white; border: 1px solid #333; border-radius: 4px; box-sizing: border-box;">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                    <option value="TRADE">TRADE</option>
+                </select>
+              </div>
+              <button type="submit" style="background-color: #0288d1; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                Update Order Type
+              </button>
+            </form>
           </div>
         </div>
 
         <script>
+            let cachedOrders = [];
+
             async function displayCards() {
                 try {
                     const response = await fetch('https://teamrocketco.onrender.com/orders');
                     const orders = await response.json();
+                    cachedOrders = orders; 
 
                     const shopContainer = document.getElementById('orders');
                     let htmlContent =`
-                                <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                                    <table>
-                                        <tr>
-                                            <th>Transaction ID</th>
-                                            <th>User ID</th>
-                                            <th>Username</th>
-                                            <th>Full Name</th>
-                                            <th>Order Type</th>
-                                            <th>Order Date</th>
-                                            <th>Order Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        `
+                        <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+                            <table>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>User ID</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Order Type</th>
+                                    <th>Order Date</th>
+                                    <th>Order Total</th>
+                                    <th>Action</th>
+                                </tr>
+                                `;
                         orders.forEach(order => {
                             htmlContent += `
-                                        <tr>
-                                            <td> ${order.transaction_id} </td>
-                                            <td> ${order.user_id} </td>
-                                            <td> ${order.username} </td>
-                                            <td> ${order.full_name} </td>
-                                            <td> ${order.order_type} </td>
-                                            <td> ${order.order_date} </td>
-                                            <td> ${Number(order.order_total).toFixed(2)} </td>
-                                            <td><button onclick="deleteCard(${order.transaction_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                            Delete Card
-                                            </button> </td>
-                                        </tr>
-                                        `;
+                                <tr>
+                                    <td> ${order.transaction_id} </td>
+                                    <td> ${order.user_id} </td>
+                                    <td> ${order.username} </td>
+                                    <td> ${order.full_name} </td>
+                                    <td> ${order.order_type} </td>
+                                    <td> ${order.order_date} </td>
+                                    <td> $${Number(order.order_total).toFixed(2)} </td>
+                                    <td>
+                                        <button onclick="openEditOrderModal(${order.transaction_id})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-right: 5px;">
+                                            Edit
+                                        </button>
+                                        <button onclick="deleteCard(${order.transaction_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                                            Delete Log
+                                        </button> 
+                                    </td>
+                                </tr>
+                                `;
                             });
                             htmlContent += `
-                                        </table>
-                                    </div>
-                                `;
+                                    </table>
+                                </div>
+                            `;
                             shopContainer.innerHTML = htmlContent;
                 } catch (error) {
-                    document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    const errorContainer = document.getElementById('orders');
+                    if (errorContainer) {
+                        errorContainer.innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
+                    }
                     console.error(error);
                 }
             }
-            displayCards();
+
+            function openEditOrderModal(transactionId) {
+                const order = cachedOrders.find(o => o.transaction_id === transactionId);
+                if (!order) return;
+
+                document.getElementById('editTransactionId').value = order.transaction_id;
+                document.getElementById('editOrderType').value = order.order_type;
+
+                document.getElementById('editOrderModal').style.display = 'flex';
+            }
+
+            // FIXED: Event listener to post new orders dynamically to your existing /transaction backend route
+            document.getElementById('addOrderForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const transactionData = {
+                    userId: document.getElementById('orderUserId').value,
+                    cardId: document.getElementById('orderCardId').value,
+                    orderType: document.getElementById('orderType').value,
+                    qty: document.getElementById('orderQty').value,
+                    totalPrice: document.getElementById('orderTotalPrice').value
+                };
+
+                try {
+                    const response = await fetch('https://teamrocketco.onrender.com/transaction', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(transactionData)
+                    });
+
+                    if (response.ok) {
+                        alert('Transaction record logged into ledger successfully!');
+                        document.getElementById('orderModal').style.display = 'none';
+                        document.getElementById('addOrderForm').reset();
+                        displayCards(); 
+                    } else {
+                        const errMsg = await response.text();
+                        alert('System rejected entry: ' + errMsg);
+                    }
+                } catch (err) {
+                    console.error("Error creating new transaction log:", err);
+                }
+            });
+
+            document.getElementById('editOrderForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const transactionId = document.getElementById('editTransactionId').value;
+                const updatedData = {
+                    order_type: document.getElementById('editOrderType').value
+                };
+
+                try {
+                    const response = await fetch(`https://teamrocketco.onrender.com/update-order/${transactionId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    if (response.ok) {
+                        alert('Order details updated successfully!');
+                        document.getElementById('editOrderModal').style.display = 'none';
+                        displayCards(); 
+                    } else {
+                        alert('Failed to save updates to ledger.');
+                    }
+                } catch (err) {
+                    console.error("Order modification fault:", err);
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                displayCards();
+            });
         </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>

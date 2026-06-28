@@ -24,8 +24,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-    preflightContinue: false,   // Automatically handles and stops the OPTIONS request here
-    optionsSuccessStatus: 204   // Answers browser preflights with a 204 No Content status
+    preflightContinue: false,   
+    optionsSuccessStatus: 204   
 }));
 
 app.use(express.json());
@@ -46,6 +46,7 @@ const pool = mysql.createPool({
 });
 
 const db = pool.promise();
+
 // 4. CORE AUTHENTICATION ENDPOINTS
 app.get("/", (req, res) => {
     res.send("Server is working");
@@ -70,7 +71,8 @@ app.post("/register", async (req, res) => {
     const defaultRole = "user";
 
     await db.query(sql, [user, fname, lname, cont, area, hashedPassword, defaultRole]);
-    res.send("<script>alert('Account successfully created!'); window.location.href='/login.html';</script>");  } catch (err) {
+    res.send("<script>alert('Account successfully created!'); window.location.href='/login.html';</script>");  
+  } catch (err) {
     console.error(err); 
     res.status(500).json({ 
       error: "Failed to create user", 
@@ -106,7 +108,6 @@ app.post("/login", async (req, res) => {
     } else {
       res.redirect("/inventory.html");
     }
-
   } catch (err) {
     console.error("Login route error:", err);
     res.status(500).send("Login error occurred");
@@ -368,13 +369,7 @@ app.listen(3000, () => {
 app.get("/inventory", async (req, res) => {
   try {
     const query = `
-      SELECT 
-        c.card_id, 
-        p.poke_name, 
-        p.base_price, 
-        c.stock_qty, 
-        c.condition_id, 
-        c.variant_id
+      SELECT c.card_id, p.poke_name, p.base_price, c.stock_qty, c.condition_id, c.variant_id
       FROM tbl_cards c
       JOIN tbl_pokemons p ON c.poke_id = p.poke_id
     `;
@@ -389,13 +384,7 @@ app.get("/inventory", async (req, res) => {
 app.get('/inventoryprices', async (req, res) => {
   try {
     const query = `
-      SELECT 
-        c.card_id,
-        p.poke_name, 
-        c.condition_id, 
-        c.variant_id, 
-        c.final_price,
-        c.stock_qty
+      SELECT c.card_id, p.poke_name, c.condition_id, c.variant_id, c.final_price, c.stock_qty
       FROM tbl_cards c
       LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
     `;
@@ -407,17 +396,60 @@ app.get('/inventoryprices', async (req, res) => {
   }
 });
 
+app.post("/inventory/add", async (req, res) => {
+  try {
+    const { poke_id, condition_id, variant_id, stock_qty, final_price } = req.body;
+    if (!poke_id || !condition_id || !variant_id) {
+      return res.status(400).json({ error: "Missing required card fields" });
+    }
+    const sql = "INSERT INTO tbl_cards (poke_id, condition_id, variant_id, stock_qty, final_price) VALUES (?, ?, ?, ?, ?)";
+    await db.query(sql, [poke_id, condition_id, variant_id, stock_qty || 0, final_price || 0.00]);
+    res.status(201).json({ message: "Card successfully added to inventory!" });
+  } catch (err) {
+    console.error("Failed to insert card:", err);
+    res.status(500).json({ error: "Failed to add card", details: err.message });
+  }
+});
+
+app.put('/update-card/:id', async (req, res) => {
+  try {
+    const cardId = req.params.id;
+    const { stock_qty, final_price } = req.body;
+    if (stock_qty === undefined || final_price === undefined) {
+      return res.status(400).json({ error: "Stock Quantity and Final Price parameters are required." });
+    }
+    const sql = "UPDATE tbl_cards SET stock_qty = ?, final_price = ? WHERE card_id = ?";
+    const [result] = await db.query(sql, [stock_qty, final_price, cardId]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Target card record was not found." });
+    }
+    res.json({ message: "Card inventory updated successfully!" });
+  } catch (err) {
+    console.error("Failed to execute card update query:", err);
+    res.status(500).json({ error: "Database transaction failed", details: err.message });
+  }
+});
+
+app.delete("/inventory/delete/:id", async (req, res) => {
+  try {
+    const cardId = req.params.id;
+    const sql = "DELETE FROM tbl_cards WHERE card_id = ?";
+    const [result] = await db.query(sql, [cardId]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Card not found or already deleted" });
+    }
+    res.json({ message: `Card ID ${cardId} successfully deleted!` });
+  } catch (err) {
+    console.error("Failed to delete card:", err);
+    res.status(500).json({ error: "Failed to delete card", details: err.message });
+  }
+});
+
+// 6. ORDER & TRANSACTION MANAGEMENT ENDPOINTS
 app.get('/orders', async (req, res) => {
   try {
     const query = `
-      SELECT 
-        t.transaction_id,
-        t.user_id, 
-        u.username,
-        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
-        t.order_type, 
-        t.order_total,
-        t.order_date
+      SELECT t.transaction_id, t.user_id, u.username, CONCAT(u.firstname, ' ', u.lastname) AS full_name, t.order_type, t.order_total, t.order_date
       FROM tbl_transactions t
       LEFT JOIN tbl_users u ON t.user_id = u.user_id
     `;
@@ -429,19 +461,70 @@ app.get('/orders', async (req, res) => {
   }
 });
 
+app.post("/transaction", async (req, res) => {
+    const { userId, cardId, orderType, qty, totalPrice } = req.body;
+    if (!userId || !cardId || !orderType || !qty) {
+        return res.status(400).send("Missing mandatory transaction details.");
+    }
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [cardRows] = await connection.query("SELECT stock_qty FROM tbl_cards WHERE card_id = ?", [cardId]);
+        if (cardRows.length === 0) throw new Error("Target card record was not found in database.");
+
+        const dbStock = cardRows[0].stock_qty;
+        let updatedStock = dbStock;
+
+        if (orderType === "BUY") {
+            if (dbStock < qty) return res.status(400).send(`Insufficient card shop inventory stock. Available: ${dbStock}`);
+            updatedStock = dbStock - qty;
+        } else if (orderType === "SELL") {
+            updatedStock = dbStock + qty;
+        } else if (orderType === "TRADE") {
+            updatedStock = dbStock;
+        } else {
+            throw new Error("Invalid transaction type processed.");
+        }
+
+        await connection.query("UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", [updatedStock, cardId]);
+        const [txResult] = await connection.query("INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)", [userId, orderType, totalPrice]);
+        const newTransactionId = txResult.insertId;
+        await connection.query("INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)", [newTransactionId, cardId, qty, totalPrice]);
+
+        await connection.commit();
+        res.status(200).send(`Transaction (${orderType}) registered successfully!`);
+    } catch (err) {
+        await connection.rollback();
+        console.error("Transaction failed, execution rolled back:", err);
+        res.status(500).send(`System error processing order logs: ${err.message}`);
+    } finally {
+        connection.release();
+    }
+});
+
+// NEW ROUTE: PUT Update an existing transaction classification
+app.put('/update-order/:id', async (req, res) => {
+  try {
+    const transactionId = req.params.id;
+    const { order_type } = req.body;
+    if (!order_type) return res.status(400).json({ error: "Order type classification is required." });
+
+    const sql = "UPDATE tbl_transactions SET order_type = ? WHERE transaction_id = ?";
+    const [result] = await db.query(sql, [order_type, transactionId]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: "Target transaction record was not found." });
+
+    res.json({ message: "Order details updated successfully!" });
+  } catch (err) {
+    console.error("Failed to update transaction logs:", err);
+    res.status(500).json({ error: "Database transaction failed", details: err.message });
+  }
+});
+
+// 7. USER MANAGEMENT ENDPOINTS
 app.get('/userlist', async (req, res) => {
   try {
     const query = `
-      SELECT 
-        u.user_id,
-        u.username,
-        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
-        u.contact_no,
-        u.area_code,
-        l.city,
-        u.role,
-        u.created_at,
-        u.updated_at
+      SELECT u.user_id, u.username, CONCAT(u.firstname, ' ', u.lastname) AS full_name, u.contact_no, u.area_code, l.city, u.role, u.created_at, u.updated_at
       FROM tbl_users u
       LEFT JOIN tbl_location l ON u.area_code = l.area_code
     `;
@@ -453,34 +536,19 @@ app.get('/userlist', async (req, res) => {
   }
 });
 
-// PUT: Update an existing user's profile details
 app.put('/update-user/:id', async (req, res) => {
   try {
     const userId = req.params.id;
     const { username, full_name, contact_no, city } = req.body;
+    if (!username || !full_name) return res.status(400).json({ error: "Username and Full Name are required fields." });
 
-    // Validate that basic details were sent
-    if (!username || !full_name) {
-      return res.status(400).json({ error: "Username and Full Name are required fields." });
-    }
-
-    // Split Full Name back into firstname and lastname for your tbl_users schema structure
     const nameParts = full_name.trim().split(" ");
     const firstname = nameParts[0];
-    const lastname = nameParts.slice(1).join(" ") || ""; // Fallback if no last name provided
+    const lastname = nameParts.slice(1).join(" ") || "";
 
-    // Update query targeting the correct 'tbl_users' table layout
-    const sql = `
-      UPDATE tbl_users 
-      SET username = ?, firstname = ?, lastname = ?, contact_no = ?, updated_at = NOW() 
-      WHERE user_id = ?
-    `;
-
+    const sql = "UPDATE tbl_users SET username = ?, firstname = ?, lastname = ?, contact_no = ?, updated_at = NOW() WHERE user_id = ?";
     const [result] = await db.query(sql, [username, firstname, lastname, contact_no, userId]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "User profile record not found." });
-    }
+    if (result.affectedRows === 0) return res.status(404).json({ error: "User profile record not found." });
 
     res.json({ message: "User profile updated successfully!" });
   } catch (err) {
@@ -489,57 +557,62 @@ app.put('/update-user/:id', async (req, res) => {
   }
 });
 
- //     LEFT JOIN tbl_conditions o ON o.condition_id = c.condition_id
-//LEFT JOIN tbl_variants v ON v.variant_id = c.variant_id;
-
-// CARDS //
-
-// INSERT: Add a new card to the inventory
-app.post("/inventory/add", async (req, res) => {
+app.get('/location', async (req, res) => {
   try {
-    const { poke_id, condition_id, variant_id, stock_qty, final_price } = req.body;
-
-    // Validate that required fields exist
-    if (!poke_id || !condition_id || !variant_id) {
-      return res.status(400).json({ error: "Missing required card fields" });
-    }
-
-    const sql = `
-      INSERT INTO tbl_cards (poke_id, condition_id, variant_id, stock_qty, final_price) 
-      VALUES (?, ?, ?, ?, ?)
-    `;
-
-    await db.query(sql, [
-      poke_id, 
-      condition_id, 
-      variant_id, 
-      stock_qty || 0, 
-      final_price || 0.00
-    ]);
-
-    res.status(201).json({ message: "Card successfully added to inventory!" });
+    const query = "SELECT l.area_code, l.city FROM tbl_location l";
+    const [locations] = await db.query(query); 
+    res.json(locations); 
   } catch (err) {
-    console.error("Failed to insert card:", err);
-    res.status(500).json({ error: "Failed to add card", details: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Failed to retrieve location data" });
   }
 });
 
-// DELETE: Remove a card from the inventory by its ID
-app.delete("/inventory/delete/:id", async (req, res) => {
+// 8. FILE REPORTING ENDPOINTS
+app.get("/download-pdf", async (req, res) => {
+  let browser;
   try {
-    const cardId = req.params.id;
+    const query = `
+      SELECT p.poke_name, c.condition_id, c.variant_id, c.final_price
+      FROM tbl_cards c
+      LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
+    `;
+    const [cards] = await db.query(query);
+    let tableRows = "";
+    cards.forEach(card => {
+      tableRows += `
+        <tr style="border-bottom: 1px solid #333;">
+          <td style="padding: 10px;"><strong>${card.poke_name || 'Unknown'}</strong></td>
+          <td style="padding: 10px;">${card.condition_id || 'N/A'}</td>
+          <td style="padding: 10px;">${card.variant_id || 'N/A'}</td>
+          <td style="padding: 10px; color: #4caf50;">$${Number(card.final_price || 0).toFixed(2)}</td>
+        </tr>
+      `;
+    });
 
-    const sql = "DELETE FROM tbl_cards WHERE card_id = ?";
-    const [result] = await db.query(sql, [cardId]);
-
-    // Check if a row was actually deleted
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Card not found or already deleted" });
-    }
-
-    res.json({ message: `Card ID ${cardId} successfully deleted!` });
+    const pdfHtmlContent = `<!DOCTYPE html><html><body><h1>Inventory Report</h1><table>${tableRows}</table></body></html>`;
+    browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    const page = await browser.newPage();
+    await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+    res.contentType("application/pdf");
+    res.send(pdfBuffer);
   } catch (err) {
-    console.error("Failed to delete card:", err);
-    res.status(500).json({ error: "Failed to delete card", details: err.message });
+    if (browser) await browser.close();
+    res.status(500).send(`PDF compilation error: ${err.message}`);
   }
+});
+
+app.get("/adminsection/inv-prices.html", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../public/inv-prices.html"));
+});
+
+app.get("/adminsection/a-dashboard.html", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../public/a-dashboard.html"));
+});
+
+// 9. WEB TRAFFIC BOUNDS
+app.listen(3000, () => {
+    console.log(`Server running on port 3000`);
 });
