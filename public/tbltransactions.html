@@ -116,44 +116,6 @@
                     document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
                     console.error(error);
                 }
-                try {
-                    const response = await fetch('https://teamrocketco.onrender.com/orders');
-                    const orders = await response.json();
-
-                    const shopContainer = document.getElementById('orders');
-                    shopContainer.innerHTML = `
-                                    <table>
-                                        <tr>
-                                            <th>Transaction ID</th>
-                                            <th>User ID</th>
-                                            <th>Order Type</th>
-                                            <th>Order Date</th>
-                                            <th>Order Total</th>
-                                        </tr>
-                                    </table>`;
-                    orders.forEach(order => {
-                        const cardHTML = `
-                            <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                                <table>
-                                    <tr>
-                                        <td> ${order.transaction_id} </td>
-                                        <td> ${order.user_id} </td>
-                                        <td> ${order.order_type} </td>
-                                        <td> ${order.order_date} </td>
-                                        <td> ${Number(order.order_total).toFixed(2)} </td>
-                                    </tr>
-                                </table>
-                                    <button onclick="deleteCard(${order.transaction_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                        Delete Card
-                                    </button>
-                                </div>`;
-                        shopContainer.innerHTML += cardHTML;
-                    });
-
-                } catch (error) {
-                    document.getElementById('cards').innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
-                    console.error(error);
-                }
             }
             displayCards();
         </script>

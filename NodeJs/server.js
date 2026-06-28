@@ -160,7 +160,7 @@ app.get('/orders', async (req, res) => {
     const [orders] = await db.query(query); 
     res.json(orders); 
   } catch (err) {
-    console.error("ORders data query error:", err);
+    console.error("Orders data query error:", err);
     res.status(500).json({ error: "Failed to retrieve transaction data" });
   }
 });
