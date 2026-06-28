@@ -150,10 +150,12 @@ app.get('/orders', async (req, res) => {
     const query = `
       SELECT 
         t.transaction_id,
+        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
         t.user_id, 
         t.order_type, 
-        t.order_total, 
+        t.order_total
       FROM tbl_transactions t
+      LEFT JOIN tbl_users u ON t.user_ud = u.user_id
     `;
     const [orders] = await db.query(query); 
     res.json(orders); 
@@ -169,7 +171,7 @@ app.get('/userlist', async (req, res) => {
       SELECT 
         u.user_id,
         u.username,
-        CONCAT(firstname, ' ', lastname) AS full_name,
+        CONCAT(u.firstname, ' ', u.lastname) AS full_name,
         u.contact_no,
         u.area_code,
         u.role 

@@ -37,7 +37,6 @@
             <main style="width: 100%; overflow-y: auto; padding: 20px;">
                 <h1 style="text-align: left"> Dashboard - Inventory </h1>
                 <br>
-                
                 <div style="margin-bottom: 20px; display: flex; gap: 10px;">
                     <button onclick="window.location.href='/download-pdf'" style="padding: 10px 20px; background-color: #ef5350; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                         Download PDF Report
@@ -113,7 +112,8 @@
                                             <th>Variant</th>
                                             <th>Price</th>
                                             <th>Stock Qty.</th>
-                                        </tr> ;
+                                            <th>Action</th>
+                                        </tr>
                                         `
                         cards.forEach(card => {
                             htmlContent += `
