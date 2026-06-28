@@ -92,12 +92,17 @@ function bindOrderFormSubmission(cardData) {
             const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
             const totalPrice = cardData.base_price * quantity;
             
-            const userId = 2;
+            const userId = localStorage.getItem("userId");
+                if(!userId){
+                    alert("Please log in first.");
+                    window.location.href="login.html";
+                    return;
+                }
 
             const orderPayload = {
-                userId: userId,
+                userId: parseInt(userId),
                 cardId: parseInt(cardData.card_id),
-                orderType: activeAction,
+                orderType: activeAction, // Reads directly from select input dropdown element state
                 qty: quantity,
                 totalPrice: totalPrice
             };

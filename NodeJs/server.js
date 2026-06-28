@@ -14,18 +14,10 @@ const app = express();
 // 2. MIDDLEWARE HOOKS
 app.use(cors({
     origin: function (origin, callback) {
-        const allowedOrigins = [
-            'https://hawkkyy.github.io', 
-            'http://localhost:3000', 
-            'http://127.0.0.1:5500',
-            'http://localhost:5500' 
-        ];
-        
+        const allowedOrigins = ['https://hawkkyy.github.io', 'http://localhost:3000', 'http://127.0.0.1:5500'];
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            // ADDED: This log will print the exact hidden domain causing the failure to your Render terminal
-            console.error("CORS Blocked Origin Authority:", origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -217,47 +209,76 @@ app.get("/download-pdf", async (req, res) => {
   }
 });
 
-// NEW SEPARATE ENDPOINT FOR ORDERS
-app.get("/download-orders-pdf", async (req, res) => {
-  let browser;
-  try {
-    const query = `
-      SELECT t.transaction_id, t.user_id, u.username, CONCAT(u.firstname, ' ', u.lastname) AS full_name, t.order_type, t.order_date, t.order_total
-      FROM tbl_transactions t
-      LEFT JOIN tbl_users u ON t.user_id = u.user_id
-      ORDER BY t.transaction_id DESC;
-    `;
-    const [orders] = await db.query(query);
+app.post("/transaction", async (req, res) => {
+    const { userId, cardId, orderType, qty, totalPrice } = req.body;
 
-    let tableRows = "";
-    orders.forEach(order => {
-      tableRows += `
-        <tr style="border-bottom: 1px solid #333;">
-          <td style="padding: 10px;">${order.transaction_id}</td>
-          <td style="padding: 10px;">${order.user_id} (${order.username || 'N/A'})</td>
-          <td style="padding: 10px;">${order.full_name || 'Unknown'}</td>
-          <td style="padding: 10px; font-weight: bold;">${order.order_type}</td>
-          <td style="padding: 10px;">${order.order_date ? new Date(order.order_date).toLocaleString() : 'N/A'}</td>
-          <td style="padding: 10px; color: #4caf50;">$${Number(order.order_total || 0).toFixed(2)}</td>
-        </tr>
-      `;
-    });
+    if (!userId || !cardId || !orderType || !qty) {
+        return res.status(400).send("Missing mandatory transaction details.");
+    }
 
-    const pdfHtmlContent = `<!DOCTYPE html><html><body style="font-family:Arial; background:#12121c; color:white; padding:30px;"><h1>Order History Report</h1><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#1a1924; text-align:left;"><th>Tx ID</th><th>User</th><th>Name</th><th>Type</th><th>Date</th><th>Total</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
+    const connection = await db.getConnection();
 
-    browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
-    const page = await browser.newPage();
-    await page.setContent(pdfHtmlContent, { waitUntil: "networkidle0" });
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
-    await browser.close();
+    try {
+        await connection.beginTransaction();
 
-    res.contentType("application/pdf");
-    res.setHeader("Content-Disposition", "attachment; filename=order-history.pdf");
-    res.send(pdfBuffer);
-  } catch (err) {
-    if (browser) await browser.close();
-    res.status(500).send(`PDF Error: ${err.message}`);
-  }
+        // 1. Fetch current stock figures from tbl_cards 
+        const [cardRows] = await connection.query(
+            "SELECT stock_qty FROM tbl_cards WHERE card_id = ?", 
+            [cardId]
+        );
+
+        if (cardRows.length === 0) {
+            throw new Error("Target card record was not found in database.");
+        }
+
+        const dbStock = cardRows[0].stock_qty;
+        let updatedStock = dbStock;
+
+        // 2. Adjust inventory balances according to the transaction type
+        if (orderType === "BUY") {
+            if (dbStock < qty) {
+                return res.status(400).send(`Insufficient card shop inventory stock. Available: ${dbStock}`);
+            }
+            updatedStock = dbStock - qty; // Customer buys -> Shop loses stock
+        } else if (orderType === "SELL") {
+            updatedStock = dbStock + qty; // Customer sells -> Shop gains stock
+        } else if (orderType === "TRADE") {
+            updatedStock = dbStock; // Trade doesn't change catalog item total balance automatically
+        } else {
+            throw new Error("Invalid transaction type processed.");
+        }
+
+        // 3. Update stock inside tbl_cards
+        await connection.query(
+            "UPDATE tbl_cards SET stock_qty = ? WHERE card_id = ?", 
+            [updatedStock, cardId]
+        );
+
+        // 4. Save details inside tbl_transactions (Matches Data Dictionary)
+        const [txResult] = await connection.query(
+            "INSERT INTO tbl_transactions (user_id, order_type, order_date, order_total) VALUES (?, ?, NOW(), ?)",
+            [userId, orderType, totalPrice]
+        );
+        
+        const newTransactionId = txResult.insertId;
+
+        // 5. Save breakdown inside tbl_transaction_items (Matches Data Dictionary columns)
+        // Passes 0 for qty_admin, and customer quantity into qty_cust
+        await connection.query(
+            "INSERT INTO tbl_transaction_items (transaction_id, card_id, qty_admin, qty_cust, total_price) VALUES (?, ?, 0, ?, ?)",
+            [newTransactionId, cardId, qty, totalPrice]
+        );
+
+        await connection.commit();
+        res.status(200).send(`Transaction (${orderType}) registered successfully!`);
+
+    } catch (err) {
+        await connection.rollback();
+        console.error("Transaction failed, execution rolled back:", err);
+        res.status(500).send(`System error processing order logs: ${err.message}`);
+    } finally {
+        connection.release();
+    }
 });
 
 app.get('/location', async (req, res) => {
