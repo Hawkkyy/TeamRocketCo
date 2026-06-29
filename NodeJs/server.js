@@ -206,7 +206,7 @@ app.get('/inventoryprices', async (req, res) => {
       FROM tbl_cards c
       LEFT JOIN tbl_pokemons p ON c.poke_id = p.poke_id
     `;
-    const [cards] = await db.query(cards); 
+    const [cards] = await db.query(query); 
     res.json(cards); 
   } catch (err) {
     console.error("Inventory data query error:", err);
