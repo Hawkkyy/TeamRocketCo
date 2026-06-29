@@ -45,7 +45,7 @@
                     </button>
                 </div>
 
-                <div id="cards" class="inventory-container"> Please wait for the database to load! <script>displayCards()</script></div>
+                <div id="cards" class="inventory-container"> Please wait for the database to load!</div>
             </main>
          </div>
         <footer>
@@ -177,6 +177,10 @@
     }
 
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+                displayCards();
+            });
         </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>
