@@ -117,11 +117,14 @@
         </div>
 
         <script>
+            // Global array variables to safely cache fetched cards
+            let cachedCards = [];
 
             async function displayCards() {
                 try {
                     const response = await fetch('https://teamrocketco.onrender.com/inventoryprices');
                     const cards = await response.json();
+                    cachedCards = cards; // Sync cache
 
                     const shopContainer = document.getElementById('cards');
                     let htmlContent =`
