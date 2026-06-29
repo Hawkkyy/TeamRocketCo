@@ -152,7 +152,7 @@ app.get('/conditions', async (req, res) => {
       SELECT 
         c.condition_id,
         c.conditions,
-        c.condition_discount
+        SUM(c.condition_discount) AS condi_disc
       FROM tbl_conditions c
     `;
     const [cond] = await db.query(query); 
