@@ -492,11 +492,11 @@ app.get("/download-orders-pdf", async (req, res) => {
 });
 
 // Static HTML assets serving
-app.get("/adminsection/inv-prices.html", (req, res) => {
+app.get("/inv-prices.html", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../public/inv-prices.html"));
 });
 
-app.get("/adminsection/a-dashboard.html", (req, res) => {
+app.get("/a-dashboard.html", (req, res) => {
     res.sendFile(path.resolve(__dirname, "../public/a-dashboard.html"));
 });
 
