@@ -492,8 +492,8 @@ app.get("/download-orders-pdf", async (req, res) => {
 });
 
 // Static HTML assets serving
-app.get("/inv-prices.html", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "../public/inv-prices.html"));
+app.get("/tblcards.html", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../public/tblcards.html"));
 });
 
 app.get("/a-dashboard.html", (req, res) => {
