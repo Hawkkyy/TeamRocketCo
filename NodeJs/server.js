@@ -108,7 +108,7 @@ app.post("/login", async (req, res) => {
     res.json({
       success: true,
       role: foundUser.role,
-      redirectUrl: foundUser.role === "admin" ? "adminsection/a-dashboard.html" : "inventory.html"
+      redirectUrl: foundUser.role === "admin" ? "a-dashboard.html" : "inventory.html"
     });
 
   } catch (err) {
