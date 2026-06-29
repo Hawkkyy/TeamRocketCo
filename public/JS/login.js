@@ -37,7 +37,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         if (data.success) {
             // Force standard relative redirection paths
             if (data.role === "admin") {
-                window.location.href = "adminsection/a-dashboard.html";
+                window.location.href = "a-dashboard.html";
             } else {
                 window.location.href = "inventory.html";
             }
