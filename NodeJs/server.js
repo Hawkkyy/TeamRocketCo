@@ -82,35 +82,45 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
+    console.log("=== NEW LOGIN ROUTE ===");
   try {
     const { user, pass } = req.body;
-    console.log(`Checking login for user: ${user}`);
 
-    const [rows] = await db.query("SELECT * FROM tbl_users WHERE username = ?", [user]);
+    const [rows] = await db.query(
+      "SELECT * FROM tbl_users WHERE username = ?",
+      [user]
+    );
 
     if (rows.length === 0) {
-      console.log("User not found in database");
-      return res.status(401).send("Invalid username or password");
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password"
+      });
     }
 
     const foundUser = rows[0];
     const match = await bcrypt.compare(pass, foundUser.password_hash);
 
     if (!match) {
-      console.log("Password did not match");
-      return res.status(401).send("Invalid username or password");
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password"
+      });
     }
 
-    console.log(`Login successful! Role: ${foundUser.role}`);
-    
-    if (foundUser.role === "admin") {
-      res.redirect("/adminsection/a-dashboard.html");
-    } else {
-      res.redirect("/inventory.html");
-    }
+    res.json({
+      success: true,
+      userId: foundUser.user_id,
+      username: foundUser.username,
+      role: foundUser.role
+    });
+
   } catch (err) {
-    console.error("Login route error:", err);
-    res.status(500).send("Login error occurred");
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Login error"
+    });
   }
 });
 
