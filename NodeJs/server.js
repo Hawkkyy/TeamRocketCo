@@ -164,7 +164,7 @@ app.get('/conditions', async (req, res) => {
 });
 
 app.get('/variants', async (req, res) => {
-  try {
+  try {s
     const query = `
       SELECT 
         v.variant_id,
