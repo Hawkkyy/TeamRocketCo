@@ -117,106 +117,70 @@
         </div>
 
         <script>
-            // Global array variables to safely cache fetched cards
-            let cachedCards = [];
-
             async function displayCards() {
-                try {
-                    const response = await fetch('https://teamrocketco.onrender.com/inventoryprices');
-                    const cards = await response.json();
-                    cachedCards = cards; // Sync cache
+    try {
+        const response = await fetch('https://teamrocketco.onrender.com/inventoryprices');
+        const cards = await response.json();
+        cachedCards = cards; // Sync cache
 
-                    const shopContainer = document.getElementById('cards');
-                    let htmlContent =`
-                        <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-                            <table>
-                                <tr>
-                                    <th>Card ID</th>
-                                    <th>Pokemon Name</th>
-                                    <th>Condition</th>
-                                    <th>Variant</th>
-                                    <th>Price</th>
-                                    <th>Stock Qty.</th>
-                                    <th>Action</th>
-                                </tr>
-                                `;
-                        cards.forEach(card => {
-                            htmlContent += `
-                                <tr>
-                                    <td> ${card.card_id} </td>
-                                    <td> ${card.poke_name} </td>
-                                    <td> ${card.condition_id} </td>
-                                    <td> ${card.variant_id} </td>
-                                    <td> $${Number(card.final_price).toFixed(2)} </td>
-                                    <td> ${card.stock_qty} </td>
-                                    <td>
-                                        <button onclick="openEditCardModal(${card.card_id})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-right: 5px;">
-                                            Edit
-                                        </button>
-                                        <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;">
-                                            Delete Card
-                                        </button> 
-                                    </td>
-                                </tr>
-                                `;
-                            });
-                            htmlContent += `
-                                    </table>
-                                </div>
-                            `;
-                            shopContainer.innerHTML = htmlContent;
-                } catch (error) {
-                    const errorContainer = document.getElementById('cards');
-                    if (errorContainer) {
-                        errorContainer.innerHTML = `Error: ${error.message} <br> Stack: ${error.stack}`;
-                    }
-                    console.error(error);
-                }
-            }
+        const shopContainer = document.getElementById('cards');
+        
+        // 1. Open the container and the table string cleanly
+        let htmlContent = `
+            <div class="card-item" style="border: 1px solid #333; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr>
+                            <th>Card ID</th>
+                            <th>Pokemon Name</th>
+                            <th>Condition</th>
+                            <th>Variant</th>
+                            <th>Price</th>
+                            <th>Stock Qty.</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
 
-            // Populate overlay fields using the safe cached array lookup
-            function openEditCardModal(cardId) {
-                const card = cachedCards.find(c => c.card_id === cardId);
-                if (!card) return;
+        // 2. Loop through rows and append them smoothly
+        cards.forEach(card => {
+            htmlContent += `
+                <tr style="border-bottom: 1px solid #222;">
+                    <td> ${card.card_id} </td>
+                    <td> ${card.poke_name || 'N/A'} </td>
+                    <td> ${card.condition_id} </td>
+                    <td> ${card.variant_id} </td>
+                    <td> $${Number(card.final_price).toFixed(2)} </td>
+                    <td> ${card.stock_qty} </td>
+                    <td>
+                        <button onclick="openEditCardModal(${card.card_id})" style="background-color: #0288d1; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-right: 5px;">
+                            Edit
+                        </button>
+                        <button onclick="deleteCard(${card.card_id})" style="background-color: #ef5350; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                            Delete
+                        </button> 
+                    </td>
+                </tr>
+            `;
+        });
 
-                document.getElementById('editCardId').value = card.card_id;
-                document.getElementById('editStockQty').value = card.stock_qty;
-                document.getElementById('editFinalPrice').value = card.final_price;
-
-                document.getElementById('editCardModal').style.display = 'flex';
-            }
-
-            // Submit execution handler to send modifications back to Render server endpoints
-            document.getElementById('editCardForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const cardId = document.getElementById('editCardId').value;
-                const updatedData = {
-                    stock_qty: document.getElementById('editStockQty').value,
-                    final_price: document.getElementById('editFinalPrice').value
-                };
-
-                try {
-                    const response = await fetch(`https://teamrocketco.onrender.com/update-card/${cardId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updatedData)
-                    });
-
-                    if (response.ok) {
-                        alert('Card inventory updated successfully!');
-                        document.getElementById('editCardModal').style.display = 'none';
-                        displayCards(); // Fresh interface redraw
-                    } else {
-                        alert('Failed to save updates to inventory layout.');
-                    }
-                } catch (err) {
-                    console.error("Card processing modification failure:", err);
-                }
-            });
-
-            document.addEventListener('DOMContentLoaded', () => {
-                displayCards();
-            });
+        // 3. Close the table string elements at the very end
+        htmlContent += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        shopContainer.innerHTML = htmlContent;
+    } catch (error) {
+        const errorContainer = document.getElementById('cards');
+        if (errorContainer) {
+            errorContainer.innerHTML = `Error loading inventory: ${error.message}`;
+        }
+        console.error(error);
+    }
+}
         </script>
         <script src="JS/inv-prices.js" defer></script>
     </body>
