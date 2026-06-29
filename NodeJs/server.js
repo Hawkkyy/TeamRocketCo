@@ -154,8 +154,9 @@ app.get('/conditions', async (req, res) => {
         c.conditions,
         SUM(c.condition_discount) AS condi_disc
       FROM tbl_conditions c
+      GROUP BY c.condition_id, c.conditions
     `;
-    const [cond] = await db.query(query); 
+    const [[cond]] = await db.query(query); 
     res.json(cond); 
   } catch (err) {
     console.error("Condition data query error:", err);
