@@ -89,28 +89,28 @@ app.post("/login", async (req, res) => {
     const [rows] = await db.query("SELECT * FROM tbl_users WHERE username = ?", [user]);
 
     if (rows.length === 0) {
-      console.log("User not found in database");
-      return res.status(401).send("Invalid username or password");
+      return res.status(401).json({ success: false, message: "Invalid username or password" });
     }
 
     const foundUser = rows[0];
     const match = await bcrypt.compare(pass, foundUser.password_hash);
 
     if (!match) {
-      console.log("Password did not match");
-      return res.status(401).send("Invalid username or password");
+      return res.status(401).json({ success: false, message: "Invalid username or password" });
     }
 
     console.log(`Login successful! Role: ${foundUser.role}`);
     
-    if (foundUser.role === "admin") {
-      res.redirect("/adminsection/a-dashboard.html");
-    } else {
-      res.redirect("/inventory.html");
-    }
+    // Instead of res.redirect(), send a JSON payload back to GitHub Pages
+    res.json({
+      success: true,
+      role: foundUser.role,
+      redirectUrl: foundUser.role === "admin" ? "adminsection/a-dashboard.html" : "inventory.html"
+    });
+
   } catch (err) {
     console.error("Login route error:", err);
-    res.status(500).send("Login error occurred");
+    res.status(500).json({ success: false, message: "Login error occurred" });
   }
 });
 
